@@ -34,4 +34,15 @@ def login(
 
 @router.get("/me", response_model=AuthenticatedUserRead)
 def me(current_user: User = Depends(get_current_user)) -> AuthenticatedUserRead:
-    return current_user
+    return AuthenticatedUserRead(
+        id=str(current_user.id),
+        email=current_user.email,
+        full_name=current_user.full_name,
+        preferred_language=current_user.preferred_language,
+        country_code=current_user.country_code,
+        role=current_user.role,
+        is_active=current_user.is_active,
+        is_verified=current_user.is_verified,
+        created_at=current_user.created_at,
+        updated_at=current_user.updated_at,
+    )
