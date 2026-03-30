@@ -55,7 +55,7 @@ export function Sidebar({
             type="button"
             className={`sidebar__nav-item${item.active ? " is-active" : ""}`}
           >
-            <span>{labels[item.key]}</span>
+            <span>{labels[item.key as keyof SidebarLabels]}</span>
           </button>
         ))}
       </nav>
