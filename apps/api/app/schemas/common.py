@@ -1,4 +1,5 @@
 import re
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
@@ -12,6 +13,8 @@ class ApiSchema(BaseModel):
     @field_validator("*", mode="before")
     @classmethod
     def empty_strings_to_none(cls, value):
+        if isinstance(value, UUID):
+            return str(value)
         if isinstance(value, str) and not value.strip():
             return None
         return value

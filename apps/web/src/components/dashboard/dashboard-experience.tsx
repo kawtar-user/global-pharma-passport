@@ -80,22 +80,44 @@ export function DashboardExperience({ locale }: DashboardExperienceProps) {
       try {
         setIsLoading(true);
         setError("");
-        const [currentUser, currentMedications, currentEntitlements] = await Promise.all([
-          getCurrentUser(token),
-          listMyMedications(token),
-          getMyEntitlements(token),
-        ]);
+        const currentUser = await getCurrentUser(token);
         if (cancelled) {
           return;
         }
         setUser(currentUser);
-        setMedications(currentMedications);
-        setEntitlements(currentEntitlements);
         setTargetCountry(getTargetCountry(currentUser.country_code));
+
+        const [medicationsResult, entitlementsResult] = await Promise.allSettled([
+          listMyMedications(token),
+          getMyEntitlements(token),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        if (medicationsResult.status === "fulfilled") {
+          setMedications(medicationsResult.value);
+        } else {
+          setMedications([]);
+          setError("Le profil est chargé, mais les traitements n'ont pas pu être récupérés pour le moment.");
+        }
+
+        if (entitlementsResult.status === "fulfilled") {
+          setEntitlements(entitlementsResult.value);
+        } else {
+          setEntitlements(null);
+          setError((current) =>
+            current || "Le profil est chargé, mais les informations d'abonnement ne sont pas disponibles pour le moment.",
+          );
+        }
+
         void trackEvent({
           eventName: "dashboard_viewed",
           locale,
-          properties: { treatment_count: currentMedications.length },
+          properties: {
+            treatment_count: medicationsResult.status === "fulfilled" ? medicationsResult.value.length : 0,
+          },
         });
       } catch (error) {
         if (cancelled) {
@@ -225,7 +247,23 @@ export function DashboardExperience({ locale }: DashboardExperienceProps) {
   }
 
   if (!user) {
-    return null;
+    return (
+      <main className="dashboard-shell">
+        <div className="dashboard-content">
+          <section className="section-card">
+            <div className="section-card__header">
+              <div>
+                <p className="section-card__eyebrow">Espace patient</p>
+                <h2>Impossible d'afficher le tableau de bord</h2>
+              </div>
+            </div>
+            <p className="empty-state">
+              {error || "Le profil n'a pas pu être chargé après la connexion. Réessaie dans quelques secondes."}
+            </p>
+          </section>
+        </div>
+      </main>
+    );
   }
 
   const treatments = medications.map(mapMedicationToTreatmentItem);
