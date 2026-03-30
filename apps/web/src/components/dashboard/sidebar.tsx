@@ -1,12 +1,3 @@
-const navigationItems = [
-  { key: "overview", active: true },
-  { key: "medications" },
-  { key: "interactions" },
-  { key: "equivalents" },
-  { key: "travelPassport" },
-  { key: "documents" },
-];
-
 type SidebarLabels = {
   overview: string;
   medications: string;
@@ -19,6 +10,20 @@ type SidebarLabels = {
   travelCta: string;
   patientDashboard: string;
 };
+
+type SidebarNavKey = keyof Pick<
+  SidebarLabels,
+  "overview" | "medications" | "interactions" | "equivalents" | "travelPassport" | "documents"
+>;
+
+const navigationItems: Array<{ key: SidebarNavKey; active?: boolean }> = [
+  { key: "overview", active: true },
+  { key: "medications" },
+  { key: "interactions" },
+  { key: "equivalents" },
+  { key: "travelPassport" },
+  { key: "documents" },
+];
 
 export function Sidebar({
   labels,
