@@ -11,19 +11,27 @@ type SidebarLabels = {
   patientDashboard: string;
 };
 
-type NavigationItem = {
-  key: keyof SidebarLabels;
+type SidebarNavKey =
+  | "overview"
+  | "medications"
+  | "interactions"
+  | "equivalents"
+  | "travelPassport"
+  | "documents";
+
+type SidebarNavigationItem = {
+  key: SidebarNavKey;
   active?: boolean;
 };
 
-const navigationItems = [
+const navigationItems: ReadonlyArray<SidebarNavigationItem> = [
   { key: "overview", active: true },
   { key: "medications" },
   { key: "interactions" },
   { key: "equivalents" },
   { key: "travelPassport" },
   { key: "documents" },
-] as const satisfies ReadonlyArray<NavigationItem>;
+];
 
 export function Sidebar({
   labels,
