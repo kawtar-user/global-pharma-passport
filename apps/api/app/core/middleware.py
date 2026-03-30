@@ -5,15 +5,20 @@ from time import perf_counter
 from uuid import uuid4
 
 from fastapi import Request, Response
+from fastapi.responses import RedirectResponse
 
 from app.core.config import settings
 
 logger = logging.getLogger("app.request")
+HEALTHCHECK_PATHS = {"/health", "/health/"}
 
 
 async def request_context_middleware(request: Request, call_next):
     request.state.request_id = request.headers.get("X-Request-ID", str(uuid4()))
     started_at = perf_counter()
+    if settings.force_https and request.url.scheme == "http" and request.url.path not in HEALTHCHECK_PATHS:
+        secure_url = request.url.replace(scheme="https")
+        return RedirectResponse(url=str(secure_url), status_code=307)
     try:
         response: Response = await call_next(request)
     except Exception:

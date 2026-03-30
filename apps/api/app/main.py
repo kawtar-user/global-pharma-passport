@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.v1.router import api_router
@@ -34,8 +33,6 @@ def create_application() -> FastAPI:
         allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
     )
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.trusted_hosts)
-    if settings.force_https:
-        app.add_middleware(HTTPSRedirectMiddleware)
     app.middleware("http")(request_context_middleware)
     app.add_exception_handler(HTTPException, http_exception_handler)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
@@ -43,6 +40,7 @@ def create_application() -> FastAPI:
     app.include_router(api_router, prefix=settings.api_v1_prefix)
 
     @app.get("/health", tags=["health"])
+    @app.get("/health/", tags=["health"], include_in_schema=False)
     def healthcheck() -> dict[str, str]:
         return {
             "status": "ok",
