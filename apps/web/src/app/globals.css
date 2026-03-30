@@ -781,6 +781,24 @@ select {
   text-align: left;
 }
 
+.landing-benefits {
+  display: grid;
+  gap: 12px;
+  margin: 24px 0 28px;
+}
+
+.landing-benefit {
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.landing-benefit strong {
+  display: block;
+  line-height: 1.5;
+}
+
 .landing-actions {
   display: flex;
   gap: 12px;

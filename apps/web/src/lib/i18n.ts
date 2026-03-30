@@ -14,8 +14,9 @@ type Dictionary = {
     eyebrow: string;
     title: string;
     subtitle: string;
-    login: string;
     signup: string;
+    login: string;
+    benefits: [string, string, string];
   };
   auth: {
     secureAccess: string;
@@ -59,11 +60,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
   fr: {
     marketing: {
       eyebrow: "Global Pharma Passport",
-      title: "Le passeport international du traitement medicamenteux.",
+      title: "Retrouvez et partagez votre traitement entre le Maroc et la France.",
       subtitle:
-        "Un espace patient simple, premium et medical pour se connecter, gerer ses traitements, comprendre les interactions et activer le mode voyage.",
-      login: "Se connecter",
+        "Global Pharma Passport vous aide a enregistrer vos medicaments, retrouver les equivalents dans l'autre pays et generer un passeport patient simple avant de voyager.",
       signup: "Creer un compte",
+      login: "Se connecter",
+      benefits: [
+        "Retrouvez vos medicaments et leurs equivalents pays.",
+        "Comprenez les interactions majeures en langage simple.",
+        "Partagez un passeport patient clair en quelques secondes.",
+      ],
     },
     auth: {
       secureAccess: "Acces securise",
@@ -108,11 +114,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
   en: {
     marketing: {
       eyebrow: "Global Pharma Passport",
-      title: "The international passport for medication continuity.",
+      title: "Understand and share your treatment between Morocco and France.",
       subtitle:
-        "A simple, premium medical workspace to sign in, manage treatments, review interactions and activate travel mode.",
-      login: "Log in",
+        "Global Pharma Passport helps you save your medications, find equivalents across countries, and generate a simple patient passport before you travel.",
       signup: "Create account",
+      login: "Log in",
+      benefits: [
+        "Find your medications and country equivalents quickly.",
+        "Review major interactions in simple language.",
+        "Share a clear patient passport in seconds.",
+      ],
     },
     auth: {
       secureAccess: "Secure access",
@@ -157,11 +168,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
   ar: {
     marketing: {
       eyebrow: "Global Pharma Passport",
-      title: "جواز دولي لاستمرارية العلاج الدوائي.",
+      title: "افهم علاجك وشاركه بين المغرب وفرنسا.",
       subtitle:
-        "مساحة مريض بسيطة وراقية لمتابعة الادوية وفهم التداخلات وتفعيل وضع السفر.",
-      login: "تسجيل الدخول",
+        "يساعدك Global Pharma Passport على حفظ ادويتك، العثور على البدائل بين البلدين، وانشاء جواز مريض بسيط قبل السفر.",
       signup: "انشاء حساب",
+      login: "تسجيل الدخول",
+      benefits: [
+        "اعثر بسرعة على دوائك وبدائله حسب الدولة.",
+        "افهم التداخلات الدوائية المهمة بلغة بسيطة.",
+        "شارك جواز مريض واضحا خلال ثوان.",
+      ],
     },
     auth: {
       secureAccess: "دخول آمن",
