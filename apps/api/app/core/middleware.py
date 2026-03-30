@@ -13,9 +13,21 @@ logger = logging.getLogger("app.request")
 HEALTHCHECK_PATHS = {"/health", "/health/"}
 
 
+def _is_trusted_host(host_header: str | None) -> bool:
+    if not host_header:
+        return False
+    if "*" in settings.trusted_hosts:
+        return True
+    normalized_host = host_header.split(":", 1)[0].strip().lower()
+    trusted_hosts = {item.strip().lower() for item in settings.trusted_hosts}
+    return normalized_host in trusted_hosts
+
+
 async def request_context_middleware(request: Request, call_next):
     request.state.request_id = request.headers.get("X-Request-ID", str(uuid4()))
     started_at = perf_counter()
+    if request.url.path not in HEALTHCHECK_PATHS and not _is_trusted_host(request.headers.get("host")):
+        return Response(status_code=400, content="Invalid host header")
     if settings.force_https and request.url.scheme == "http" and request.url.path not in HEALTHCHECK_PATHS:
         secure_url = request.url.replace(scheme="https")
         return RedirectResponse(url=str(secure_url), status_code=307)
