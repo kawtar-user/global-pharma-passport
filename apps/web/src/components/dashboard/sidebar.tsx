@@ -11,19 +11,19 @@ type SidebarLabels = {
   patientDashboard: string;
 };
 
-type SidebarNavKey = keyof Pick<
-  SidebarLabels,
-  "overview" | "medications" | "interactions" | "equivalents" | "travelPassport" | "documents"
->;
+type NavigationItem = {
+  key: keyof SidebarLabels;
+  active?: boolean;
+};
 
-const navigationItems: Array<{ key: SidebarNavKey; active?: boolean }> = [
+const navigationItems = [
   { key: "overview", active: true },
   { key: "medications" },
   { key: "interactions" },
   { key: "equivalents" },
   { key: "travelPassport" },
   { key: "documents" },
-];
+] as const satisfies ReadonlyArray<NavigationItem>;
 
 export function Sidebar({
   labels,
