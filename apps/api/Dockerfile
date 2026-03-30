@@ -18,4 +18,4 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 EXPOSE 8000
 
-CMD ["/app/start.sh"]
+ENTRYPOINT ["/app/start.sh"]
