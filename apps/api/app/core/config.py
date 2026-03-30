@@ -1,13 +1,15 @@
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+DEFAULT_DATABASE_URL = "postgresql+psycopg://postgres:postgres@localhost:5432/global_pharma_passport"
+
 
 class Settings(BaseSettings):
     environment: str = "development"
     app_name: str = "Global Pharma Passport API"
     app_version: str = "0.1.0"
     api_v1_prefix: str = "/api/v1"
-    database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/global_pharma_passport"
+    database_url: str = DEFAULT_DATABASE_URL
     jwt_secret_key: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24
@@ -43,6 +45,10 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment.lower() == "production"
+
+    @property
+    def uses_default_database_url(self) -> bool:
+        return self.database_url == DEFAULT_DATABASE_URL
 
 
 settings = Settings()
