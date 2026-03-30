@@ -21,12 +21,12 @@ def verify_password(password: str, password_hash_value: str) -> bool:
     return password_hash.verify(password, password_hash_value)
 
 
-def create_access_token(subject: str) -> str:
+def create_access_token(subject: object) -> str:
     expires_delta = timedelta(minutes=settings.access_token_expire_minutes)
     now = datetime.now(timezone.utc)
     expire = now + expires_delta
     payload: dict[str, Any] = {
-        "sub": subject,
+        "sub": str(subject),
         "exp": expire,
         "iat": now,
         "nbf": now,

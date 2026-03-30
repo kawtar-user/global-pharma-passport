@@ -114,7 +114,7 @@ def create_checkout_session(user: User, *, success_path: str, cancel_path: str) 
         cancel_url=f"{settings.app_base_url}{cancel_path}",
         customer_email=user.email,
         line_items=[{"price": settings.stripe_premium_monthly_price_id, "quantity": 1}],
-        metadata={"user_id": user.id, "plan_code": PREMIUM_PLAN},
+        metadata={"user_id": str(user.id), "plan_code": PREMIUM_PLAN},
     )
     return str(session.url)
 
