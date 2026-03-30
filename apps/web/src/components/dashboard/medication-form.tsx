@@ -1,0 +1,421 @@
+"use client";
+
+import { useState } from "react";
+import type { FormEvent } from "react";
+import type { Locale } from "@/lib/i18n";
+import { trackEvent } from "@/lib/analytics";
+import { ApiError, createMyMedication, DrugProduct, listDrugProducts, PatientMedication } from "@/lib/api";
+import { getAccessToken } from "@/lib/session";
+
+type MedicationFormProps = {
+  onMedicationCreated: (medication: PatientMedication) => void;
+  locale: Locale;
+  defaultCountry: string;
+  currentMedicationCount: number;
+  medicationLimit: number | null;
+  isPremium: boolean;
+  onUpgrade: () => void;
+};
+
+type MedicationDraft = {
+  query: string;
+  country: string;
+  selectedPresentationId: string;
+  enteredName: string;
+  doseText: string;
+  frequencyText: string;
+  indication: string;
+};
+
+const initialState = (country: string): MedicationDraft => ({
+  query: "",
+  country: country === "FR" ? "FR" : "MA",
+  selectedPresentationId: "",
+  enteredName: "",
+  doseText: "",
+  frequencyText: "",
+  indication: "",
+});
+
+type SearchResult = {
+  presentationId: string;
+  brandName: string;
+  countryCode: string;
+  strengthText: string;
+  dosageForm: string;
+  activeIngredients: string[];
+};
+
+const medicationCopy: Record<
+  Locale,
+  {
+    labels: {
+      search: string;
+      selectedMedication: string;
+      schedule: string;
+      purpose: string;
+      country: string;
+      searchAction: string;
+      submit: string;
+    };
+    placeholders: {
+      search: string;
+      schedule: string;
+      purpose: string;
+    };
+    hints: {
+      selectedMedication: string;
+      country: string;
+    };
+    errors: {
+      query: string;
+      selection: string;
+      schedule: string;
+      purpose: string;
+      session: string;
+    };
+    success: string;
+    searchStates: {
+      idle: string;
+      loading: string;
+      empty: string;
+      submitting: string;
+    };
+  }
+> = {
+  fr: {
+    labels: {
+      search: "Rechercher un médicament",
+      selectedMedication: "Médicament sélectionné",
+      schedule: "Posologie",
+      purpose: "Indication",
+      country: "Pays",
+      searchAction: "Rechercher dans le catalogue",
+      submit: "Ajouter au passeport",
+    },
+    placeholders: {
+      search: "Ex. Doliprane, Glucophage, Coveram...",
+      schedule: "1 comprimé matin et soir",
+      purpose: "Diabète, tension, douleur...",
+    },
+    hints: {
+      selectedMedication: "Choisis une présentation issue du catalogue pour activer les équivalents et interactions.",
+      country: "Choisis le pays où ce médicament est actuellement utilisé.",
+    },
+    errors: {
+      query: "Ajoute un nom de médicament pour lancer la recherche.",
+      selection: "Sélectionne un médicament dans les résultats du catalogue.",
+      schedule: "Ajoute une posologie simple et compréhensible.",
+      purpose: "Ajoute à quoi sert ce traitement.",
+      session: "Ta session a expiré. Reconnecte-toi pour ajouter un traitement.",
+    },
+    success: "Traitement ajouté. Ton passeport médical vient d'être mis à jour.",
+    searchStates: {
+      idle: "Recherche le médicament exact avant de l'ajouter.",
+      loading: "Recherche dans le catalogue en cours...",
+      empty: "Aucun résultat pour cette recherche dans le pays choisi.",
+      submitting: "Ajout du traitement en cours...",
+    },
+  },
+  en: {
+    labels: {
+      search: "Search medication",
+      selectedMedication: "Selected medication",
+      schedule: "Dosage",
+      purpose: "Reason",
+      country: "Country",
+      searchAction: "Search catalog",
+      submit: "Add to passport",
+    },
+    placeholders: {
+      search: "e.g. Doliprane, Glucophage, Coveram...",
+      schedule: "1 tablet morning and evening",
+      purpose: "Diabetes, blood pressure, pain...",
+    },
+    hints: {
+      selectedMedication: "Choose a catalog presentation to enable equivalents and interaction checks.",
+      country: "Choose the country where this medication is currently used.",
+    },
+    errors: {
+      query: "Add a medication name to start the search.",
+      selection: "Select one medication from the catalog results.",
+      schedule: "Add a simple, easy-to-understand dosage.",
+      purpose: "Add what this treatment is for.",
+      session: "Your session expired. Sign in again to add a treatment.",
+    },
+    success: "Medication added. Your medical passport has been updated.",
+    searchStates: {
+      idle: "Search the exact medication before adding it.",
+      loading: "Searching the catalog...",
+      empty: "No result found for this search in the selected country.",
+      submitting: "Adding medication...",
+    },
+  },
+  ar: {
+    labels: {
+      search: "البحث عن دواء",
+      selectedMedication: "الدواء المحدد",
+      schedule: "الجرعة",
+      purpose: "سبب الاستخدام",
+      country: "الدولة",
+      searchAction: "البحث في الدليل",
+      submit: "إضافة إلى الجواز الطبي",
+    },
+    placeholders: {
+      search: "مثال: Doliprane أو Glucophage أو Coveram",
+      schedule: "قرص صباحا ومساء",
+      purpose: "سكري، ضغط، ألم...",
+    },
+    hints: {
+      selectedMedication: "اختر تركيبة من الدليل لتفعيل البدائل الدولية وفحص التداخلات.",
+      country: "اختر الدولة التي تستعمل فيها هذا الدواء حاليا.",
+    },
+    errors: {
+      query: "أضف اسم الدواء لبدء البحث.",
+      selection: "اختر دواء واحدا من نتائج الدليل.",
+      schedule: "أضف جرعة واضحة وسهلة الفهم.",
+      purpose: "أضف سبب استخدام هذا العلاج.",
+      session: "انتهت الجلسة. سجل الدخول من جديد لإضافة علاج.",
+    },
+    success: "تمت إضافة العلاج وتحديث الجواز الطبي.",
+    searchStates: {
+      idle: "ابحث عن الدواء الصحيح قبل إضافته.",
+      loading: "جار البحث في الدليل...",
+      empty: "لا توجد نتيجة لهذا البحث في الدولة المختارة.",
+      submitting: "جار إضافة العلاج...",
+    },
+  },
+};
+
+function flattenResults(products: DrugProduct[]): SearchResult[] {
+  return products.flatMap((product) =>
+    product.presentations.map((presentation) => ({
+      presentationId: presentation.id,
+      brandName: product.brand_name,
+      countryCode: product.country_code,
+      strengthText: presentation.strength_text,
+      dosageForm: presentation.route || presentation.id,
+      activeIngredients: presentation.ingredients.map((item) => item.active_ingredient_id),
+    })),
+  );
+}
+
+export function MedicationForm({
+  onMedicationCreated,
+  locale,
+  defaultCountry,
+  currentMedicationCount,
+  medicationLimit,
+  isPremium,
+  onUpgrade,
+}: MedicationFormProps) {
+  const [form, setForm] = useState<MedicationDraft>(() => initialState(defaultCountry));
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const copy = medicationCopy[locale];
+  const remainingMedicationSlots =
+    medicationLimit === null ? null : Math.max(medicationLimit - currentMedicationCount, 0);
+
+  function updateField(field: keyof MedicationDraft, value: string) {
+    setForm((current) => {
+      const next = { ...current, [field]: value };
+      if (field === "query" || field === "country") {
+        next.selectedPresentationId = "";
+        next.enteredName = "";
+      }
+      return next;
+    });
+  }
+
+  async function handleSearch() {
+    setError("");
+    setSuccess("");
+
+    if (form.query.trim().length < 2) {
+      setError(copy.errors.query);
+      return;
+    }
+
+    try {
+      setIsSearching(true);
+      setHasSearched(true);
+      const token = getAccessToken();
+      if (!token) {
+        setError(copy.errors.session);
+        return;
+      }
+      const products = await listDrugProducts(form.query.trim(), form.country, token);
+      setSearchResults(flattenResults(products));
+    } catch (error) {
+      setError(error instanceof ApiError ? error.message : copy.searchStates.empty);
+    } finally {
+      setIsSearching(false);
+    }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (!form.selectedPresentationId) {
+      setError(copy.errors.selection);
+      return;
+    }
+
+    if (form.frequencyText.trim().length < 2) {
+      setError(copy.errors.schedule);
+      return;
+    }
+
+    if (form.indication.trim().length < 2) {
+      setError(copy.errors.purpose);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const token = getAccessToken();
+      if (!token) {
+        setError(copy.errors.session);
+        return;
+      }
+      const medication = await createMyMedication(
+        {
+          drug_presentation_id: form.selectedPresentationId,
+          entered_name: form.enteredName,
+          dose_text: form.doseText,
+          frequency_text: form.frequencyText,
+          indication: form.indication,
+        },
+        token,
+      );
+      void trackEvent({
+        eventName: "medication_added",
+        locale,
+        countryCode: form.country,
+        properties: { has_schedule: Boolean(form.frequencyText), has_purpose: Boolean(form.indication) },
+      });
+      onMedicationCreated(medication);
+      setForm(initialState(defaultCountry));
+      setSearchResults([]);
+      setHasSearched(false);
+      setSuccess(copy.success);
+    } catch (error) {
+      setError(error instanceof ApiError ? error.message : copy.errors.session);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <form className="medication-form" onSubmit={handleSubmit}>
+      {!isPremium ? (
+        <div className="upsell-card">
+          <div>
+            <p className="upsell-card__eyebrow">Offre actuelle</p>
+            <strong>Free inclut {medicationLimit ?? 3} traitements et 1 équivalent par recherche.</strong>
+            <p>
+              {remainingMedicationSlots === 0
+                ? "Tu as atteint la limite gratuite. Premium débloque les traitements illimités et le mode voyage complet."
+                : `Il te reste ${remainingMedicationSlots} traitement(s) dans Free. Premium débloque tout le passeport sans limite.`}
+            </p>
+          </div>
+          <button type="button" className="secondary-button" onClick={onUpgrade}>
+            Passer en Premium
+          </button>
+        </div>
+      ) : (
+        <p className="form-note">Premium actif : ajoute tous tes traitements et enrichis ton passeport sans limite.</p>
+      )}
+
+      <div className="medication-form__grid">
+        <label className="field">
+          <span>{copy.labels.search}</span>
+          <input
+            type="text"
+            value={form.query}
+            onChange={(event) => updateField("query", event.target.value)}
+            placeholder={copy.placeholders.search}
+            required
+          />
+        </label>
+
+        <label className="field">
+          <span>{copy.labels.country}</span>
+          <select value={form.country} onChange={(event) => updateField("country", event.target.value)}>
+            <option value="MA">MA</option>
+            <option value="FR">FR</option>
+          </select>
+          <small className="field__hint">{copy.hints.country}</small>
+        </label>
+
+        <label className="field">
+          <span>{copy.labels.selectedMedication}</span>
+          <select
+            value={form.selectedPresentationId}
+            onChange={(event) => {
+              const selected = searchResults.find((item) => item.presentationId === event.target.value);
+              updateField("selectedPresentationId", event.target.value);
+              updateField("enteredName", selected ? `${selected.brandName} ${selected.strengthText}` : "");
+            }}
+          >
+            <option value="">{copy.searchStates.idle}</option>
+            {searchResults.map((result) => (
+              <option key={result.presentationId} value={result.presentationId}>
+                {result.brandName} · {result.strengthText} · {result.countryCode}
+              </option>
+            ))}
+          </select>
+          <small className="field__hint">{copy.hints.selectedMedication}</small>
+        </label>
+
+        <label className="field">
+          <span>{copy.labels.schedule}</span>
+          <input
+            type="text"
+            value={form.frequencyText}
+            onChange={(event) => updateField("frequencyText", event.target.value)}
+            placeholder={copy.placeholders.schedule}
+            required
+          />
+        </label>
+
+        <label className="field">
+          <span>{copy.labels.purpose}</span>
+          <input
+            type="text"
+            value={form.indication}
+            onChange={(event) => updateField("indication", event.target.value)}
+            placeholder={copy.placeholders.purpose}
+            required
+          />
+        </label>
+      </div>
+
+      <button type="button" className="secondary-button" onClick={() => void handleSearch()} disabled={isSearching}>
+        {isSearching ? copy.searchStates.loading : copy.labels.searchAction}
+      </button>
+
+      {searchResults.length === 0 && !isSearching ? (
+        <p className="form-note">{hasSearched ? copy.searchStates.empty : copy.searchStates.idle}</p>
+      ) : null}
+
+      {error ? (
+        <p className="form-feedback form-feedback--error" role="alert">
+          {error}
+        </p>
+      ) : null}
+
+      {success ? <p className="form-feedback form-feedback--success">{success}</p> : null}
+
+      <button type="submit" className="primary-button" disabled={isSubmitting}>
+        {isSubmitting ? copy.searchStates.submitting : copy.labels.submit}
+      </button>
+    </form>
+  );
+}

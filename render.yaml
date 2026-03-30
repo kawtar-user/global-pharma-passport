@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: global-pharma-passport-api
+    env: docker
+    rootDir: apps/api
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DOCS_ENABLED
+        value: "false"
+      - key: FORCE_HTTPS
+        value: "true"
+
+databases:
+  - name: global-pharma-passport-db
+    databaseName: global_pharma_passport
+    user: global_pharma_passport

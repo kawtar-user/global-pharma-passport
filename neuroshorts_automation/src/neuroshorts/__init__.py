@@ -1,0 +1,2 @@
+"""NeuroShorts automation package."""
+

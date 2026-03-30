@@ -1,0 +1,7 @@
+.venv
+__pycache__
+.pytest_cache
+*.pyc
+*.pyo
+*.pyd
+test_global_pharma_passport.db
