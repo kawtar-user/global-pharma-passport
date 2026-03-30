@@ -37,6 +37,7 @@ class MedicationStatus(str, Enum):
 class User(UuidPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "users"
 
+    supabase_auth_id: Mapped[str | None] = mapped_column(String(36), unique=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
