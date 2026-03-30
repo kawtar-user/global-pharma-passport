@@ -35,8 +35,12 @@ const navigationItems: ReadonlyArray<SidebarNavigationItem> = [
 
 export function Sidebar({
   labels,
+  onNavigate,
+  onOpenPassport,
 }: {
   labels: SidebarLabels;
+  onNavigate: (key: SidebarNavKey) => void;
+  onOpenPassport: () => void;
 }) {
   return (
     <aside className="sidebar">
@@ -54,8 +58,9 @@ export function Sidebar({
             key={item.key}
             type="button"
             className={`sidebar__nav-item${item.active ? " is-active" : ""}`}
+            onClick={() => onNavigate(item.key)}
           >
-            <span>{labels[item.key as keyof SidebarLabels]}</span>
+            <span>{labels[item.key]}</span>
           </button>
         ))}
       </nav>
@@ -63,7 +68,7 @@ export function Sidebar({
       <div className="sidebar__cta">
         <p className="sidebar__cta-label">{labels.travelMode}</p>
         <p className="sidebar__cta-text">{labels.travelText}</p>
-        <button type="button" className="primary-button">
+        <button type="button" className="primary-button" onClick={onOpenPassport}>
           {labels.travelCta}
         </button>
       </div>

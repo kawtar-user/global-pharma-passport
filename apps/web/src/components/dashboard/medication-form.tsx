@@ -46,6 +46,10 @@ type SearchResult = {
   activeIngredients: string[];
 };
 
+function unique(values: Array<string | null | undefined>) {
+  return Array.from(new Set(values.filter((value): value is string => Boolean(value))));
+}
+
 const medicationCopy: Record<
   Locale,
   {
@@ -195,7 +199,9 @@ function flattenResults(products: DrugProduct[]): SearchResult[] {
       countryCode: product.country_code,
       strengthText: presentation.strength_text,
       dosageForm: presentation.route || presentation.id,
-      activeIngredients: presentation.ingredients.map((item) => item.active_ingredient_id),
+      activeIngredients: unique(
+        presentation.ingredients.map((item) => item.active_ingredient_name ?? item.active_ingredient_id),
+      ),
     })),
   );
 }
@@ -212,6 +218,7 @@ export function MedicationForm({
   const [form, setForm] = useState<MedicationDraft>(() => initialState(defaultCountry));
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [searchNotice, setSearchNotice] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -234,6 +241,7 @@ export function MedicationForm({
   async function handleSearch() {
     setError("");
     setSuccess("");
+    setSearchNotice("");
 
     if (form.query.trim().length < 2) {
       setError(copy.errors.query);
@@ -248,8 +256,43 @@ export function MedicationForm({
         setError(copy.errors.session);
         return;
       }
-      const products = await listDrugProducts(form.query.trim(), form.country, token);
-      setSearchResults(flattenResults(products));
+      const normalizedQuery = form.query.trim();
+      const products = await listDrugProducts(normalizedQuery, form.country, token);
+      if (products.length > 0) {
+        setSearchResults(flattenResults(products));
+        return;
+      }
+
+      const corridorMatches = await listDrugProducts(normalizedQuery, null, token);
+      const activeIngredientNames = unique(
+        corridorMatches.flatMap((product) =>
+          product.presentations.flatMap((presentation) =>
+            presentation.ingredients.map((item) => item.active_ingredient_name),
+          ),
+        ),
+      );
+
+      if (activeIngredientNames.length > 0) {
+        const ingredientMatches = await listDrugProducts(activeIngredientNames[0], form.country, token);
+        if (ingredientMatches.length > 0) {
+          setSearchResults(flattenResults(ingredientMatches));
+          setSearchNotice(
+            `Aucun résultat exact pour "${normalizedQuery}" dans ${form.country}. Voici les correspondances trouvées à partir du principe actif ${activeIngredientNames[0]}.`,
+          );
+          return;
+        }
+      }
+
+      if (corridorMatches.length > 0) {
+        setSearchResults(flattenResults(corridorMatches));
+        setSearchNotice(
+          `Aucun résultat exact dans le pays choisi. Voici les présentations trouvées sur le corridor Maroc-France pour t'aider à retrouver le bon traitement.`,
+        );
+        return;
+      }
+
+      setSearchResults([]);
+      setSearchNotice("Aucun résultat trouvé. Essaie le principe actif ou l'autre pays du corridor.");
     } catch (error) {
       setError(error instanceof ApiError ? error.message : copy.searchStates.empty);
     } finally {
@@ -261,6 +304,7 @@ export function MedicationForm({
     event.preventDefault();
     setError("");
     setSuccess("");
+    setSearchNotice("");
 
     if (!form.selectedPresentationId) {
       setError(copy.errors.selection);
@@ -404,6 +448,8 @@ export function MedicationForm({
       {searchResults.length === 0 && !isSearching ? (
         <p className="form-note">{hasSearched ? copy.searchStates.empty : copy.searchStates.idle}</p>
       ) : null}
+
+      {searchNotice ? <p className="form-note">{searchNotice}</p> : null}
 
       {error ? (
         <p className="form-feedback form-feedback--error" role="alert">

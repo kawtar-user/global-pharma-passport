@@ -112,7 +112,9 @@ def create_drug_product(db: Session, payload: DrugProductCreate) -> DrugProduct:
     stmt = (
         select(DrugProduct)
         .options(
-            selectinload(DrugProduct.presentations).selectinload(DrugPresentation.ingredients),
+            selectinload(DrugProduct.presentations)
+            .selectinload(DrugPresentation.ingredients)
+            .joinedload(DrugPresentationIngredient.ingredient),
         )
         .where(DrugProduct.id == product.id)
     )
@@ -122,7 +124,12 @@ def create_drug_product(db: Session, payload: DrugProductCreate) -> DrugProduct:
 def list_drug_products(db: Session, query: str | None = None, country_code: str | None = None) -> list[DrugProduct]:
     stmt = (
         select(DrugProduct)
-        .options(selectinload(DrugProduct.presentations).selectinload(DrugPresentation.ingredients))
+        .distinct()
+        .options(
+            selectinload(DrugProduct.presentations)
+            .selectinload(DrugPresentation.ingredients)
+            .joinedload(DrugPresentationIngredient.ingredient),
+        )
         .order_by(DrugProduct.brand_name.asc())
     )
     if query:
@@ -131,6 +138,13 @@ def list_drug_products(db: Session, query: str | None = None, country_code: str 
             or_(
                 DrugProduct.brand_name.ilike(like_value),
                 DrugProduct.description.ilike(like_value),
+                DrugProduct.presentations.any(
+                    DrugPresentation.ingredients.any(
+                        DrugPresentationIngredient.ingredient.has(
+                            ActiveIngredient.inn_name.ilike(like_value)
+                        )
+                    )
+                ),
             )
         )
     if country_code:

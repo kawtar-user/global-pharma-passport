@@ -67,6 +67,31 @@ export function DashboardExperience({ locale }: DashboardExperienceProps) {
   const [travelModeEnabled, setTravelModeEnabled] = useState(false);
   const [targetCountry, setTargetCountry] = useState("FR");
 
+  function scrollToSection(sectionId: string) {
+    if (typeof document === "undefined") {
+      return;
+    }
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function handleSidebarNavigation(
+    key: "overview" | "medications" | "interactions" | "equivalents" | "travelPassport" | "documents",
+  ) {
+    const sectionMap = {
+      overview: "dashboard-overview",
+      medications: "dashboard-medications",
+      interactions: "dashboard-interactions",
+      equivalents: "dashboard-equivalents",
+      travelPassport: "dashboard-passport",
+      documents: "dashboard-history",
+    } as const;
+    scrollToSection(sectionMap[key]);
+  }
+
+  function handleOpenPassport() {
+    router.push(`/${locale}/passport`);
+  }
+
   useEffect(() => {
     let cancelled = false;
 
@@ -297,17 +322,21 @@ export function DashboardExperience({ locale }: DashboardExperienceProps) {
           travelCta: dictionary.dashboard.travelCta,
           patientDashboard: dictionary.dashboard.patientDashboard,
         }}
+        onNavigate={handleSidebarNavigation}
+        onOpenPassport={handleOpenPassport}
       />
 
       <div className="dashboard-content">
         {error ? <p className="form-feedback form-feedback--error">{error}</p> : null}
 
-        <Topbar
+        <div id="dashboard-overview">
+          <Topbar
           name={user.full_name}
           memberSince={memberSince}
           countryCode={user.country_code ?? "N/A"}
           preferredLanguage={user.preferred_language}
-        />
+          />
+        </div>
 
         <div className="dashboard-toolbar">
           <HeroBanner
@@ -345,7 +374,7 @@ export function DashboardExperience({ locale }: DashboardExperienceProps) {
         <StatsGrid stats={stats} />
 
         <div className="dashboard-grid">
-          <SectionCard eyebrow="Passeport" title="Passeport patient central">
+          <SectionCard id="dashboard-passport" eyebrow="Passeport" title="Passeport patient central">
             <PassportPreview
               medicationCount={treatments.length}
               preferredLanguage={user.preferred_language}
@@ -359,7 +388,7 @@ export function DashboardExperience({ locale }: DashboardExperienceProps) {
             <p className="form-note">{passportProof}</p>
           </SectionCard>
 
-          <SectionCard eyebrow={dictionary.dashboard.medications} title={dictionary.dashboard.addMedication}>
+          <SectionCard id="dashboard-medications" eyebrow={dictionary.dashboard.medications} title={dictionary.dashboard.addMedication}>
             <MedicationForm
               onMedicationCreated={handleMedicationCreated}
               locale={locale}
@@ -375,11 +404,11 @@ export function DashboardExperience({ locale }: DashboardExperienceProps) {
             <TreatmentList items={treatments} />
           </SectionCard>
 
-          <SectionCard eyebrow="Safety" title={dictionary.dashboard.safety}>
+          <SectionCard id="dashboard-interactions" eyebrow="Safety" title={dictionary.dashboard.safety}>
             <AlertList items={alerts} />
           </SectionCard>
 
-          <SectionCard eyebrow="International" title={dictionary.dashboard.international}>
+          <SectionCard id="dashboard-equivalents" eyebrow="International" title={dictionary.dashboard.international}>
             <EquivalentsTable
               items={equivalents}
               isPremium={isPremium}
@@ -388,7 +417,7 @@ export function DashboardExperience({ locale }: DashboardExperienceProps) {
             />
           </SectionCard>
 
-          <SectionCard eyebrow="History" title={dictionary.dashboard.recentActivity}>
+          <SectionCard id="dashboard-history" eyebrow="History" title={dictionary.dashboard.recentActivity}>
             <Timeline items={timeline} />
           </SectionCard>
         </div>

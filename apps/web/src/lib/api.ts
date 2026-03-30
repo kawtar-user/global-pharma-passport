@@ -60,6 +60,7 @@ export type DrugPresentation = {
 export type MedicationIngredient = {
   id: string;
   active_ingredient_id: string;
+  active_ingredient_name: string | null;
   strength_value: number | null;
   strength_unit: string | null;
   is_primary: boolean;
@@ -301,11 +302,11 @@ export function createMyMedication(
   });
 }
 
-export function listDrugProducts(query: string, countryCode: string, token?: string | null) {
-  const searchParams = new URLSearchParams({
-    query,
-    country_code: countryCode,
-  });
+export function listDrugProducts(query: string, countryCode?: string | null, token?: string | null) {
+  const searchParams = new URLSearchParams({ query });
+  if (countryCode) {
+    searchParams.set("country_code", countryCode);
+  }
   return request<DrugProduct[]>(`/medications/products?${searchParams.toString()}`, { token });
 }
 

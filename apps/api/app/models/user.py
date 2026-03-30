@@ -80,7 +80,7 @@ class UserMedication(UuidPrimaryKeyMixin, TimestampMixin, Base):
             return None
 
         return {
-            "presentation_id": presentation.id,
+            "presentation_id": str(presentation.id),
             "brand_name": presentation.drug_product.brand_name,
             "country_code": presentation.drug_product.country_code,
             "dosage_form": presentation.dosage_form.name,

@@ -71,6 +71,7 @@ class DrugProductCreate(ApiSchema):
 class MedicationIngredientRead(OrmSchema):
     id: str
     active_ingredient_id: str
+    active_ingredient_name: str | None = None
     strength_value: float | None
     strength_unit: str | None
     is_primary: bool

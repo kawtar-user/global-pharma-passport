@@ -22,13 +22,18 @@ export function PassportPageClient({ locale }: { locale: string }) {
       }
 
       try {
+        setError("");
         const result = await getMyPassport(locale, token);
         if (!cancelled) {
           setSnapshot(result);
         }
       } catch (error) {
         if (!cancelled) {
-          setError(error instanceof ApiError ? error.message : "Impossible de charger le passeport.");
+          if (error instanceof ApiError && error.status === 401) {
+            router.replace(`/${locale}/login`);
+            return;
+          }
+          setError(error instanceof Error ? error.message : "Impossible de charger le passeport.");
         }
       }
     }

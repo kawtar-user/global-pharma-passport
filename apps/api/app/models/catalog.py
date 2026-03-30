@@ -99,6 +99,10 @@ class DrugPresentationIngredient(UuidPrimaryKeyMixin, Base):
     drug_presentation: Mapped["DrugPresentation"] = relationship(back_populates="ingredients")
     ingredient: Mapped["ActiveIngredient"] = relationship(back_populates="presentation_ingredients")
 
+    @property
+    def active_ingredient_name(self) -> str | None:
+        return self.ingredient.inn_name if self.ingredient is not None else None
+
 
 class DrugEquivalent(UuidPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "drug_equivalents"

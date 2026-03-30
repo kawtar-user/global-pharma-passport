@@ -76,7 +76,7 @@ def _load_major_interactions(db: Session, medications: list[UserMedication]) -> 
             continue
         results.append(
             PassportInteractionItem(
-                interaction_id=interaction.id,
+                interaction_id=str(interaction.id),
                 severity=interaction.severity.value,
                 title=f"{interaction.ingredient_a.inn_name} + {interaction.ingredient_b.inn_name}",
                 clinical_effect=interaction.clinical_effect,
@@ -90,7 +90,7 @@ def _serialize_medication(medication: UserMedication) -> PassportMedicationItem:
     presentation = medication.drug_presentation
     if presentation is None:
         return PassportMedicationItem(
-            medication_id=medication.id,
+            medication_id=str(medication.id),
             entered_name=medication.entered_name,
             active_ingredients=[],
             dosage=medication.dose_text,
@@ -104,7 +104,7 @@ def _serialize_medication(medication: UserMedication) -> PassportMedicationItem:
         if item.ingredient is not None
     ]
     return PassportMedicationItem(
-        medication_id=medication.id,
+        medication_id=str(medication.id),
         entered_name=medication.entered_name,
         brand_name=presentation.drug_product.brand_name if presentation.drug_product else None,
         active_ingredients=active_ingredients,
@@ -186,7 +186,7 @@ def generate_passport_snapshot(db: Session, user: User, language_code: str | Non
     db.refresh(snapshot)
 
     return PassportSnapshotRead(
-        passport_id=passport.id,
+        passport_id=str(passport.id),
         share_token=passport.share_token,
         title=passport.title,
         language_code=snapshot.language_code,
@@ -219,7 +219,7 @@ def get_shared_passport_snapshot(db: Session, share_token: str, language_code: s
     snapshot = sorted(matching, key=lambda item: item.version, reverse=True)[0]
     payload = snapshot.snapshot_json
     return PassportSnapshotRead(
-        passport_id=passport.id,
+        passport_id=str(passport.id),
         share_token=passport.share_token,
         title=passport.title,
         language_code=snapshot.language_code,
