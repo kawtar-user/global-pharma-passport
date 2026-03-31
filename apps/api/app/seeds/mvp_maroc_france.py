@@ -70,6 +70,96 @@ PRODUCTS = [
         },
     },
     {
+        "key": "fr_dafalgan_1000_tablet",
+        "brand_name": "Dafalgan",
+        "country_code": "FR",
+        "manufacturer": "UPSA",
+        "description": "Paracetamol 1000 mg tablet commercialized in France.",
+        "presentation": {
+            "dosage_form_code": "tablet",
+            "route": "oral",
+            "strength_text": "1000 mg",
+            "ingredients": [
+                {"inn_name": "Paracetamol", "strength_value": 1000, "strength_unit": "mg", "is_primary": True},
+            ],
+        },
+    },
+    {
+        "key": "fr_efferalgan_1000_tablet",
+        "brand_name": "Efferalgan",
+        "country_code": "FR",
+        "manufacturer": "UPSA",
+        "description": "Paracetamol 1000 mg tablet commercialized in France.",
+        "presentation": {
+            "dosage_form_code": "tablet",
+            "route": "oral",
+            "strength_text": "1000 mg",
+            "ingredients": [
+                {"inn_name": "Paracetamol", "strength_value": 1000, "strength_unit": "mg", "is_primary": True},
+            ],
+        },
+    },
+    {
+        "key": "ma_panadol_1000_tablet",
+        "brand_name": "Panadol",
+        "country_code": "MA",
+        "manufacturer": "GSK",
+        "description": "Paracetamol 1000 mg tablet commercialized in Morocco.",
+        "presentation": {
+            "dosage_form_code": "tablet",
+            "route": "oral",
+            "strength_text": "1000 mg",
+            "ingredients": [
+                {"inn_name": "Paracetamol", "strength_value": 1000, "strength_unit": "mg", "is_primary": True},
+            ],
+        },
+    },
+    {
+        "key": "ma_efferalgan_1000_tablet",
+        "brand_name": "Efferalgan",
+        "country_code": "MA",
+        "manufacturer": "UPSA Maroc",
+        "description": "Paracetamol 1000 mg tablet commercialized in Morocco.",
+        "presentation": {
+            "dosage_form_code": "tablet",
+            "route": "oral",
+            "strength_text": "1000 mg",
+            "ingredients": [
+                {"inn_name": "Paracetamol", "strength_value": 1000, "strength_unit": "mg", "is_primary": True},
+            ],
+        },
+    },
+    {
+        "key": "fr_clamoxyl_1g_tablet",
+        "brand_name": "Clamoxyl",
+        "country_code": "FR",
+        "manufacturer": "GSK",
+        "description": "Amoxicillin 1 g tablet commercialized in France.",
+        "presentation": {
+            "dosage_form_code": "tablet",
+            "route": "oral",
+            "strength_text": "1 g",
+            "ingredients": [
+                {"inn_name": "Amoxicillin", "strength_value": 1000, "strength_unit": "mg", "is_primary": True},
+            ],
+        },
+    },
+    {
+        "key": "ma_clamoxyl_1g_tablet",
+        "brand_name": "Clamoxyl",
+        "country_code": "MA",
+        "manufacturer": "GSK Maroc",
+        "description": "Amoxicillin 1 g tablet commercialized in Morocco.",
+        "presentation": {
+            "dosage_form_code": "tablet",
+            "route": "oral",
+            "strength_text": "1 g",
+            "ingredients": [
+                {"inn_name": "Amoxicillin", "strength_value": 1000, "strength_unit": "mg", "is_primary": True},
+            ],
+        },
+    },
+    {
         "key": "fr_glucophage_850_tablet",
         "brand_name": "Glucophage",
         "country_code": "FR",
@@ -237,6 +327,27 @@ EQUIVALENTS = [
         "equivalence_type": "same_active_ingredient",
         "equivalence_score": 100,
         "clinical_notes": "Same brand family, same active ingredient and same oral tablet strength.",
+    },
+    {
+        "source_key": "fr_dafalgan_1000_tablet",
+        "target_key": "ma_panadol_1000_tablet",
+        "equivalence_type": "same_active_ingredient",
+        "equivalence_score": 98,
+        "clinical_notes": "Same paracetamol tablet strength across the Morocco-France corridor.",
+    },
+    {
+        "source_key": "fr_efferalgan_1000_tablet",
+        "target_key": "ma_efferalgan_1000_tablet",
+        "equivalence_type": "same_active_ingredient",
+        "equivalence_score": 99,
+        "clinical_notes": "Same brand family, same active ingredient and same tablet strength.",
+    },
+    {
+        "source_key": "fr_clamoxyl_1g_tablet",
+        "target_key": "ma_clamoxyl_1g_tablet",
+        "equivalence_type": "same_active_ingredient",
+        "equivalence_score": 99,
+        "clinical_notes": "Same amoxicillin tablet strength in France and Morocco.",
     },
     {
         "source_key": "fr_glucophage_850_tablet",

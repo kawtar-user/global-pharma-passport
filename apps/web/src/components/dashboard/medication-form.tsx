@@ -46,6 +46,8 @@ type SearchResult = {
   activeIngredients: string[];
 };
 
+type SelectedMedication = SearchResult;
+
 function unique(values: Array<string | null | undefined>) {
   return Array.from(new Set(values.filter((value): value is string => Boolean(value))));
 }
@@ -212,6 +214,7 @@ export function MedicationForm({
   const [success, setSuccess] = useState("");
   const [searchNotice, setSearchNotice] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [selectedMedication, setSelectedMedication] = useState<SelectedMedication | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -220,11 +223,16 @@ export function MedicationForm({
     medicationLimit === null ? null : Math.max(medicationLimit - currentMedicationCount, 0);
 
   function updateField(field: keyof MedicationDraft, value: string) {
+    if (field === "query" || field === "country") {
+      setSelectedMedication(null);
+      setSearchNotice("");
+    }
     setForm((current) => {
       const next = { ...current, [field]: value };
       if (field === "query" || field === "country") {
         next.selectedPresentationId = "";
         next.enteredName = "";
+        next.doseText = "";
       }
       return next;
     });
@@ -275,6 +283,12 @@ export function MedicationForm({
     const normalizedQuery = form.query.trim();
     const token = getAccessToken();
 
+    if (selectedMedication && normalizedQuery === `${selectedMedication.brandName} ${selectedMedication.strengthText}`) {
+      setIsSearching(false);
+      setSearchResults([]);
+      return;
+    }
+
     if (normalizedQuery.length < 2) {
       setSearchResults([]);
       setHasSearched(false);
@@ -318,11 +332,12 @@ export function MedicationForm({
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [form.query, form.country, copy.errors.session, copy.searchStates.empty]);
+  }, [form.query, form.country, selectedMedication, copy.errors.session, copy.searchStates.empty]);
 
   function handleSuggestionSelect(result: SearchResult) {
     setError("");
     setSuccess("");
+    setSelectedMedication(result);
     setForm((current) => ({
       ...current,
       query: `${result.brandName} ${result.strengthText}`,
@@ -364,9 +379,9 @@ export function MedicationForm({
       }
       const medication = await createMyMedication(
         {
-          drug_presentation_id: form.selectedPresentationId,
-          entered_name: form.enteredName,
-          dose_text: form.doseText,
+          drug_presentation_id: selectedMedication?.presentationId || form.selectedPresentationId,
+          entered_name: selectedMedication ? `${selectedMedication.brandName} ${selectedMedication.strengthText}` : form.enteredName,
+          dose_text: selectedMedication?.strengthText || form.doseText,
           frequency_text: form.frequencyText,
           indication: form.indication,
         },
@@ -381,6 +396,7 @@ export function MedicationForm({
       onMedicationCreated(medication);
       setForm(initialState(defaultCountry));
       setSearchResults([]);
+      setSelectedMedication(null);
       setHasSearched(false);
       setSuccess(copy.success);
     } catch (error) {
@@ -459,6 +475,12 @@ export function MedicationForm({
 
       {isSearching ? <p className="form-note">{copy.searchStates.loading}</p> : null}
 
+      {selectedMedication ? (
+        <p className="form-feedback form-feedback--success">
+          Sélectionné : {selectedMedication.brandName} {selectedMedication.strengthText} · {selectedMedication.countryCode}
+        </p>
+      ) : null}
+
       {searchResults.length > 0 ? (
         <div className="search-suggestions">
           {searchResults.map((result) => (
@@ -492,7 +514,12 @@ export function MedicationForm({
       <button
         type="submit"
         className="primary-button"
-        disabled={isSubmitting || !form.selectedPresentationId || form.frequencyText.trim().length < 2 || form.indication.trim().length < 2}
+        disabled={
+          isSubmitting ||
+          !selectedMedication ||
+          form.frequencyText.trim().length < 2 ||
+          form.indication.trim().length < 2
+        }
       >
         {isSubmitting ? copy.searchStates.submitting : copy.labels.submit}
       </button>
