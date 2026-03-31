@@ -631,6 +631,38 @@ select {
   box-shadow: 0 0 0 4px rgba(15, 107, 88, 0.08);
 }
 
+.search-suggestions {
+  display: grid;
+  gap: 10px;
+}
+
+.search-suggestion {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.82);
+  text-align: left;
+  cursor: pointer;
+}
+
+.search-suggestion strong,
+.search-suggestion span {
+  margin: 0;
+}
+
+.search-suggestion span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.search-suggestion:hover {
+  border-color: rgba(15, 107, 88, 0.24);
+  background: rgba(243, 249, 246, 0.96);
+}
+
 .form-feedback,
 .form-note {
   margin: 0;

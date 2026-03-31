@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import type { Locale } from "@/lib/i18n";
 import { trackEvent } from "@/lib/analytics";
@@ -55,11 +55,9 @@ const medicationCopy: Record<
   {
     labels: {
       search: string;
-      selectedMedication: string;
       schedule: string;
       purpose: string;
       country: string;
-      searchAction: string;
       submit: string;
     };
     placeholders: {
@@ -68,7 +66,7 @@ const medicationCopy: Record<
       purpose: string;
     };
     hints: {
-      selectedMedication: string;
+      search: string;
       country: string;
     };
     errors: {
@@ -90,11 +88,9 @@ const medicationCopy: Record<
   fr: {
     labels: {
       search: "Rechercher un médicament",
-      selectedMedication: "Médicament sélectionné",
       schedule: "Posologie",
       purpose: "Indication",
       country: "Pays",
-      searchAction: "Rechercher dans le catalogue",
       submit: "Ajouter au passeport",
     },
     placeholders: {
@@ -103,7 +99,7 @@ const medicationCopy: Record<
       purpose: "Diabète, tension, douleur...",
     },
     hints: {
-      selectedMedication: "Choisis une présentation issue du catalogue pour activer les équivalents et interactions.",
+      search: "Commence à taper le nom commercial ou le principe actif. Les suggestions arrivent automatiquement.",
       country: "Choisis le pays où ce médicament est actuellement utilisé.",
     },
     errors: {
@@ -124,11 +120,9 @@ const medicationCopy: Record<
   en: {
     labels: {
       search: "Search medication",
-      selectedMedication: "Selected medication",
       schedule: "Dosage",
       purpose: "Reason",
       country: "Country",
-      searchAction: "Search catalog",
       submit: "Add to passport",
     },
     placeholders: {
@@ -137,7 +131,7 @@ const medicationCopy: Record<
       purpose: "Diabetes, blood pressure, pain...",
     },
     hints: {
-      selectedMedication: "Choose a catalog presentation to enable equivalents and interaction checks.",
+      search: "Start typing a brand or active ingredient. Suggestions load automatically.",
       country: "Choose the country where this medication is currently used.",
     },
     errors: {
@@ -158,11 +152,9 @@ const medicationCopy: Record<
   ar: {
     labels: {
       search: "البحث عن دواء",
-      selectedMedication: "الدواء المحدد",
       schedule: "الجرعة",
       purpose: "سبب الاستخدام",
       country: "الدولة",
-      searchAction: "البحث في الدليل",
       submit: "إضافة إلى الجواز الطبي",
     },
     placeholders: {
@@ -171,7 +163,7 @@ const medicationCopy: Record<
       purpose: "سكري، ضغط، ألم...",
     },
     hints: {
-      selectedMedication: "اختر تركيبة من الدليل لتفعيل البدائل الدولية وفحص التداخلات.",
+      search: "ابدأ بكتابة الاسم التجاري أو المادة الفعالة وستظهر الاقتراحات تلقائيا.",
       country: "اختر الدولة التي تستعمل فيها هذا الدواء حاليا.",
     },
     errors: {
@@ -238,66 +230,108 @@ export function MedicationForm({
     });
   }
 
-  async function handleSearch() {
-    setError("");
-    setSuccess("");
-    setSearchNotice("");
+  async function searchCatalog(query: string, country: string, token: string) {
+    const products = await listDrugProducts(query, country, token);
+    if (products.length > 0) {
+      return {
+        results: flattenResults(products),
+        notice: "",
+      };
+    }
 
-    if (form.query.trim().length < 2) {
-      setError(copy.errors.query);
+    const corridorMatches = await listDrugProducts(query, null, token);
+    const activeIngredientNames = unique(
+      corridorMatches.flatMap((product) =>
+        product.presentations.flatMap((presentation) =>
+          presentation.ingredients.map((item) => item.active_ingredient_name),
+        ),
+      ),
+    );
+
+    if (activeIngredientNames.length > 0) {
+      const ingredientMatches = await listDrugProducts(activeIngredientNames[0], country, token);
+      if (ingredientMatches.length > 0) {
+        return {
+          results: flattenResults(ingredientMatches),
+          notice: `Aucun résultat exact pour "${query}" dans ${country}. Voici les correspondances trouvées à partir du principe actif ${activeIngredientNames[0]}.`,
+        };
+      }
+    }
+
+    if (corridorMatches.length > 0) {
+      return {
+        results: flattenResults(corridorMatches),
+        notice: "Aucun résultat exact dans le pays choisi. Voici les présentations trouvées sur le corridor Maroc-France.",
+      };
+    }
+
+    return {
+      results: [],
+      notice: "Aucun résultat trouvé. Essaie le principe actif ou l'autre pays du corridor.",
+    };
+  }
+
+  useEffect(() => {
+    const normalizedQuery = form.query.trim();
+    const token = getAccessToken();
+
+    if (normalizedQuery.length < 2) {
+      setSearchResults([]);
+      setHasSearched(false);
+      setIsSearching(false);
+      setSearchNotice("");
       return;
     }
 
-    try {
-      setIsSearching(true);
-      setHasSearched(true);
-      const token = getAccessToken();
-      if (!token) {
-        setError(copy.errors.session);
-        return;
-      }
-      const normalizedQuery = form.query.trim();
-      const products = await listDrugProducts(normalizedQuery, form.country, token);
-      if (products.length > 0) {
-        setSearchResults(flattenResults(products));
-        return;
-      }
+    if (!token) {
+      setError(copy.errors.session);
+      return;
+    }
 
-      const corridorMatches = await listDrugProducts(normalizedQuery, null, token);
-      const activeIngredientNames = unique(
-        corridorMatches.flatMap((product) =>
-          product.presentations.flatMap((presentation) =>
-            presentation.ingredients.map((item) => item.active_ingredient_name),
-          ),
-        ),
-      );
+    let cancelled = false;
+    setIsSearching(true);
+    setHasSearched(true);
+    setError("");
+    setSuccess("");
 
-      if (activeIngredientNames.length > 0) {
-        const ingredientMatches = await listDrugProducts(activeIngredientNames[0], form.country, token);
-        if (ingredientMatches.length > 0) {
-          setSearchResults(flattenResults(ingredientMatches));
-          setSearchNotice(
-            `Aucun résultat exact pour "${normalizedQuery}" dans ${form.country}. Voici les correspondances trouvées à partir du principe actif ${activeIngredientNames[0]}.`,
-          );
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const response = await searchCatalog(normalizedQuery, form.country, token);
+        if (cancelled) {
           return;
         }
+        setSearchResults(response.results);
+        setSearchNotice(response.notice);
+      } catch (searchError) {
+        if (!cancelled) {
+          setSearchResults([]);
+          setError(searchError instanceof ApiError ? searchError.message : copy.searchStates.empty);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsSearching(false);
+        }
       }
+    }, 300);
 
-      if (corridorMatches.length > 0) {
-        setSearchResults(flattenResults(corridorMatches));
-        setSearchNotice(
-          `Aucun résultat exact dans le pays choisi. Voici les présentations trouvées sur le corridor Maroc-France pour t'aider à retrouver le bon traitement.`,
-        );
-        return;
-      }
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [form.query, form.country, copy.errors.session, copy.searchStates.empty]);
 
-      setSearchResults([]);
-      setSearchNotice("Aucun résultat trouvé. Essaie le principe actif ou l'autre pays du corridor.");
-    } catch (error) {
-      setError(error instanceof ApiError ? error.message : copy.searchStates.empty);
-    } finally {
-      setIsSearching(false);
-    }
+  function handleSuggestionSelect(result: SearchResult) {
+    setError("");
+    setSuccess("");
+    setForm((current) => ({
+      ...current,
+      query: `${result.brandName} ${result.strengthText}`,
+      selectedPresentationId: result.presentationId,
+      enteredName: `${result.brandName} ${result.strengthText}`,
+      doseText: result.strengthText,
+    }));
+    setSearchResults([]);
+    setSearchNotice(`Sélectionné : ${result.brandName} ${result.strengthText} · ${result.countryCode}`);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -386,7 +420,9 @@ export function MedicationForm({
             onChange={(event) => updateField("query", event.target.value)}
             placeholder={copy.placeholders.search}
             required
+            autoComplete="off"
           />
+          <small className="field__hint">{copy.hints.search}</small>
         </label>
 
         <label className="field">
@@ -396,26 +432,6 @@ export function MedicationForm({
             <option value="FR">FR</option>
           </select>
           <small className="field__hint">{copy.hints.country}</small>
-        </label>
-
-        <label className="field">
-          <span>{copy.labels.selectedMedication}</span>
-          <select
-            value={form.selectedPresentationId}
-            onChange={(event) => {
-              const selected = searchResults.find((item) => item.presentationId === event.target.value);
-              updateField("selectedPresentationId", event.target.value);
-              updateField("enteredName", selected ? `${selected.brandName} ${selected.strengthText}` : "");
-            }}
-          >
-            <option value="">{copy.searchStates.idle}</option>
-            {searchResults.map((result) => (
-              <option key={result.presentationId} value={result.presentationId}>
-                {result.brandName} · {result.strengthText} · {result.countryCode}
-              </option>
-            ))}
-          </select>
-          <small className="field__hint">{copy.hints.selectedMedication}</small>
         </label>
 
         <label className="field">
@@ -441,11 +457,25 @@ export function MedicationForm({
         </label>
       </div>
 
-      <button type="button" className="secondary-button" onClick={() => void handleSearch()} disabled={isSearching}>
-        {isSearching ? copy.searchStates.loading : copy.labels.searchAction}
-      </button>
+      {isSearching ? <p className="form-note">{copy.searchStates.loading}</p> : null}
 
-      {searchResults.length === 0 && !isSearching ? (
+      {searchResults.length > 0 ? (
+        <div className="search-suggestions">
+          {searchResults.map((result) => (
+            <button
+              key={result.presentationId}
+              type="button"
+              className="search-suggestion"
+              onClick={() => handleSuggestionSelect(result)}
+            >
+              <strong>{result.brandName} {result.strengthText}</strong>
+              <span>{result.countryCode} · {result.activeIngredients.join(" + ")}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {searchResults.length === 0 && hasSearched && !isSearching && !searchNotice ? (
         <p className="form-note">{hasSearched ? copy.searchStates.empty : copy.searchStates.idle}</p>
       ) : null}
 
@@ -459,7 +489,11 @@ export function MedicationForm({
 
       {success ? <p className="form-feedback form-feedback--success">{success}</p> : null}
 
-      <button type="submit" className="primary-button" disabled={isSubmitting}>
+      <button
+        type="submit"
+        className="primary-button"
+        disabled={isSubmitting || !form.selectedPresentationId || form.frequencyText.trim().length < 2 || form.indication.trim().length < 2}
+      >
         {isSubmitting ? copy.searchStates.submitting : copy.labels.submit}
       </button>
     </form>

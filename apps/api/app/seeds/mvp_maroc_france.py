@@ -55,6 +55,21 @@ PRODUCTS = [
         },
     },
     {
+        "key": "ma_doliprane_1000_tablet",
+        "brand_name": "Doliprane",
+        "country_code": "MA",
+        "manufacturer": "Sanofi",
+        "description": "Paracetamol 1000 mg tablet commercialized in Morocco.",
+        "presentation": {
+            "dosage_form_code": "tablet",
+            "route": "oral",
+            "strength_text": "1000 mg",
+            "ingredients": [
+                {"inn_name": "Paracetamol", "strength_value": 1000, "strength_unit": "mg", "is_primary": True},
+            ],
+        },
+    },
+    {
         "key": "fr_glucophage_850_tablet",
         "brand_name": "Glucophage",
         "country_code": "FR",
@@ -215,6 +230,13 @@ EQUIVALENTS = [
         "equivalence_type": "same_active_ingredient",
         "equivalence_score": 99,
         "clinical_notes": "Same active ingredient, same oral tablet strength.",
+    },
+    {
+        "source_key": "fr_doliprane_1000_tablet",
+        "target_key": "ma_doliprane_1000_tablet",
+        "equivalence_type": "same_active_ingredient",
+        "equivalence_score": 100,
+        "clinical_notes": "Same brand family, same active ingredient and same oral tablet strength.",
     },
     {
         "source_key": "fr_glucophage_850_tablet",
