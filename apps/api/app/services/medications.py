@@ -13,6 +13,13 @@ from app.schemas.medications import (
     PatientMedicationUpdate,
 )
 
+SEARCH_ALIASES = {
+    "paracetamol": ["paracetamol", "paracétamol"],
+    "amoxicillin": ["amoxicillin", "amoxicilline"],
+    "clavulanic acid": ["clavulanic acid", "acide clavulanique"],
+    "ibuprofen": ["ibuprofen", "ibuprofene", "ibuprofène"],
+}
+
 
 def _patient_medication_load_options():
     return (
@@ -22,6 +29,16 @@ def _patient_medication_load_options():
         .selectinload(DrugPresentation.ingredients)
         .joinedload(DrugPresentationIngredient.ingredient),
     )
+
+
+def _expand_search_terms(query: str) -> list[str]:
+    normalized = query.strip().lower()
+    terms = {normalized}
+    for canonical, aliases in SEARCH_ALIASES.items():
+        if normalized == canonical or normalized in aliases:
+            terms.update(aliases)
+            terms.add(canonical)
+    return [term for term in terms if term]
 
 
 def create_active_ingredient(db: Session, payload: ActiveIngredientCreate) -> ActiveIngredient:
@@ -133,20 +150,23 @@ def list_drug_products(db: Session, query: str | None = None, country_code: str 
         .order_by(DrugProduct.brand_name.asc())
     )
     if query:
-        like_value = f"%{query.strip()}%"
-        stmt = stmt.where(
-            or_(
-                DrugProduct.brand_name.ilike(like_value),
-                DrugProduct.description.ilike(like_value),
+        search_conditions = []
+        for term in _expand_search_terms(query):
+            like_value = f"%{term}%"
+            search_conditions.append(DrugProduct.brand_name.ilike(like_value))
+            search_conditions.append(DrugProduct.description.ilike(like_value))
+            search_conditions.append(
                 DrugProduct.presentations.any(
                     DrugPresentation.ingredients.any(
                         DrugPresentationIngredient.ingredient.has(
                             ActiveIngredient.inn_name.ilike(like_value)
                         )
                     )
-                ),
+                )
             )
-        )
+        stmt = stmt.where(
+            or_(*search_conditions)
+            )
     if country_code:
         stmt = stmt.where(DrugProduct.country_code == country_code.upper())
     return list(db.scalars(stmt))
