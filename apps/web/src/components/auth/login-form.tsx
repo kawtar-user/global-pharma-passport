@@ -22,6 +22,7 @@ const loginCopy: Record<
     invalidPassword: string;
     genericError: string;
     sessionReady: string;
+    verificationPending: string;
   }
 > = {
   fr: {
@@ -35,6 +36,8 @@ const loginCopy: Record<
     invalidPassword: "Le mot de passe doit contenir au moins 8 caractères.",
     genericError: "Impossible de continuer pour le moment. Réessaie dans quelques secondes.",
     sessionReady: "Connexion réussie. Chargement de ton espace patient...",
+    verificationPending:
+      "Connexion réussie. L'email reste à confirmer, mais l'accès beta est temporairement autorisé.",
   },
   en: {
     emailPlaceholder: "patient@example.com",
@@ -47,6 +50,8 @@ const loginCopy: Record<
     invalidPassword: "Your password must be at least 8 characters long.",
     genericError: "We could not continue right now. Please try again in a few seconds.",
     sessionReady: "Signed in successfully. Loading your patient workspace...",
+    verificationPending:
+      "Signed in successfully. The email still needs confirmation, but beta access is temporarily allowed.",
   },
   ar: {
     emailPlaceholder: "patient@example.com",
@@ -59,6 +64,8 @@ const loginCopy: Record<
     invalidPassword: "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل.",
     genericError: "تعذر المتابعة حاليا. حاول مرة أخرى بعد قليل.",
     sessionReady: "تم تسجيل الدخول بنجاح. جار تحميل مساحتك الطبية...",
+    verificationPending:
+      "تم تسجيل الدخول بنجاح. ما زال البريد يحتاج إلى تأكيد، لكن الوصول التجريبي مسموح مؤقتا.",
   },
 };
 
@@ -96,7 +103,7 @@ export function LoginForm({ locale }: { locale: Locale }) {
         locale,
         properties: { screen: "login" },
       });
-      setSuccess(copy.sessionReady);
+      setSuccess(response.requires_verification ? copy.verificationPending : copy.sessionReady);
       router.push(`/${locale}/dashboard`);
     } catch (error) {
       setError(error instanceof ApiError ? error.message : copy.genericError);

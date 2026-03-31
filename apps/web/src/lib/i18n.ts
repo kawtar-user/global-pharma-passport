@@ -72,6 +72,7 @@ type Dictionary = {
     activeTreatmentsTitle: string;
     addMedicationHelp: string;
     corridorLabel: string;
+    emailVerificationPending: string;
     equivalentsEmptyTitle: string;
     equivalentsEmptyBody: string;
     equivalentsResultsTitle: string;
@@ -152,6 +153,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       activeTreatmentsTitle: "Traitements actifs",
       addMedicationHelp: "Recherche d'abord un medicament du catalogue, puis selectionne la bonne presentation avant de l'ajouter au passeport.",
       corridorLabel: "Corridor actif",
+      emailVerificationPending:
+        "Adresse email non confirmee. L'acces beta reste ouvert temporairement pendant que la verification email finale est en preparation.",
       equivalentsEmptyTitle: "Aucun traitement compare pour le moment",
       equivalentsEmptyBody: "Ajoute d'abord un traitement lie au catalogue pour calculer les equivalences entre le Maroc et la France.",
       equivalentsResultsTitle: "Equivalents trouves",
@@ -230,6 +233,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       activeTreatmentsTitle: "Active treatments",
       addMedicationHelp: "Search the catalog first, then select the right presentation before adding it to the passport.",
       corridorLabel: "Active corridor",
+      emailVerificationPending:
+        "Your email is not confirmed yet. Beta access stays temporarily open while final email verification delivery is being prepared.",
       equivalentsEmptyTitle: "No treatment ready for comparison yet",
       equivalentsEmptyBody: "Add a catalog-linked treatment first to calculate equivalents between Morocco and France.",
       equivalentsResultsTitle: "Found equivalents",
@@ -307,6 +312,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       activeTreatmentsTitle: "العلاجات النشطة",
       addMedicationHelp: "ابحث أولا في دليل الادوية ثم اختر التركيبة الصحيحة قبل اضافتها الى الجواز.",
       corridorLabel: "الممر النشط",
+      emailVerificationPending:
+        "لم يتم تاكيد البريد الالكتروني بعد. الوصول التجريبي ما زال متاحا مؤقتا ريثما يتم تفعيل ارسال رسائل التحقق النهائية.",
       equivalentsEmptyTitle: "لا يوجد علاج جاهز للمقارنة بعد",
       equivalentsEmptyBody: "اضف اولا علاجا مرتبطا بالدليل لحساب البدائل بين المغرب وفرنسا.",
       equivalentsResultsTitle: "البدائل المتاحة",

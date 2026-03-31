@@ -60,6 +60,9 @@ export function DashboardSummaryClient({ locale }: { locale: Locale }) {
       locale={locale}
       title={dictionary.workspace.summaryTitle}
       subtitle={dictionary.workspace.summarySubtitle}
+      notice={
+        user.is_verified ? null : <p className="form-note">{dictionary.workspace.emailVerificationPending}</p>
+      }
     >
       {error ? <p className="form-feedback form-feedback--error">{error}</p> : null}
 

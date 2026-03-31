@@ -23,6 +23,7 @@ const signupCopy: Record<
     weakPassword: string;
     genericError: string;
     success: string;
+    verificationPending: string;
   }
 > = {
   fr: {
@@ -38,6 +39,8 @@ const signupCopy: Record<
     weakPassword: "Le mot de passe doit inclure une majuscule, une minuscule, un chiffre et un caractère spécial.",
     genericError: "Le compte n'a pas pu être créé pour le moment. Réessaie dans quelques secondes.",
     success: "Compte créé. Redirection vers ton tableau de bord...",
+    verificationPending:
+      "Compte créé. L'accès beta reste ouvert pour le moment, même si l'email n'est pas encore confirmé.",
   },
   en: {
     fullNamePlaceholder: "Kawtar El Idrissi",
@@ -52,6 +55,8 @@ const signupCopy: Record<
     weakPassword: "Password must include uppercase, lowercase, digit and special character.",
     genericError: "Your account could not be created right now. Please try again in a few seconds.",
     success: "Account created. Redirecting to your dashboard...",
+    verificationPending:
+      "Account created. Beta access stays open for now, even though the email is not confirmed yet.",
   },
   ar: {
     fullNamePlaceholder: "كوثر الإدريسي",
@@ -66,6 +71,8 @@ const signupCopy: Record<
     weakPassword: "يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم ورمز خاص.",
     genericError: "تعذر إنشاء الحساب حاليا. حاول مرة أخرى بعد قليل.",
     success: "تم إنشاء الحساب. جار التحويل إلى لوحة المتابعة...",
+    verificationPending:
+      "تم إنشاء الحساب. ما زال الوصول التجريبي متاحا حاليا حتى لو لم يتم تأكيد البريد الإلكتروني بعد.",
   },
 };
 
@@ -133,7 +140,7 @@ export function SignupForm({ locale }: { locale: Locale }) {
         countryCode: form.country,
         properties: { screen: "signup" },
       });
-      setSuccess(copy.success);
+      setSuccess(response.requires_verification ? copy.verificationPending : copy.success);
       router.push(`/${locale}/dashboard`);
     } catch (error) {
       setError(error instanceof ApiError ? error.message : copy.genericError);

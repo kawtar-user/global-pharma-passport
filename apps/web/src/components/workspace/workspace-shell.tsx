@@ -11,10 +11,11 @@ type WorkspaceShellProps = {
   title: string;
   subtitle: string;
   actions?: ReactNode;
+  notice?: ReactNode;
   children: ReactNode;
 };
 
-export function WorkspaceShell({ locale, title, subtitle, actions, children }: WorkspaceShellProps) {
+export function WorkspaceShell({ locale, title, subtitle, actions, notice, children }: WorkspaceShellProps) {
   const pathname = usePathname();
   const dictionary = getDictionary(locale);
   const items = [
@@ -50,6 +51,7 @@ export function WorkspaceShell({ locale, title, subtitle, actions, children }: W
             <p className="section-card__eyebrow">Poste de travail patient</p>
             <h1>{title}</h1>
             <p className="workspace-header__subtitle">{subtitle}</p>
+            {notice ? <div className="workspace-header__notice">{notice}</div> : null}
           </div>
           {actions ? <div className="workspace-header__actions">{actions}</div> : null}
         </div>

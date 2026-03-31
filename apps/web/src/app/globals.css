@@ -994,6 +994,11 @@ select {
   color: var(--muted);
 }
 
+.workspace-header__notice {
+  margin-top: 14px;
+  max-width: 760px;
+}
+
 .workspace-header__actions {
   display: flex;
   gap: 12px;

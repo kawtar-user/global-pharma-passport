@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db_session
+from app.core.config import settings
 from app.core.security import decode_access_token
 from app.models.user import User, UserRole
 
@@ -36,6 +37,8 @@ def get_current_user(
 
 
 def get_current_verified_user(current_user: User = Depends(get_current_user)) -> User:
+    if not settings.require_verified_email_for_product:
+        return current_user
     if not current_user.is_verified:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -28,6 +28,7 @@ export type AuthenticatedUser = {
 export type AccessTokenResponse = {
   access_token: string;
   token_type: string;
+  requires_verification: boolean;
 };
 
 export type DrugProduct = {

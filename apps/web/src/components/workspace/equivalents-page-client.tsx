@@ -52,6 +52,9 @@ export function EquivalentsPageClient({ locale }: { locale: Locale }) {
       locale={locale}
       title={dictionary.workspace.equivalentsTitle}
       subtitle={`${dictionary.workspace.equivalentsSubtitle} ${dictionary.workspace.corridorLabel}: ${user.country_code ?? "MA"} -> ${user.country_code === "FR" ? "MA" : "FR"}.`}
+      notice={
+        user.is_verified ? null : <p className="form-note">{dictionary.workspace.emailVerificationPending}</p>
+      }
       actions={
         <Link href={`/${locale}/treatments`} className="secondary-button">
           {dictionary.workspace.addTreatmentShortcut}

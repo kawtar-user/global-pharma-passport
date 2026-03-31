@@ -51,6 +51,9 @@ export function TreatmentsPageClient({ locale }: { locale: Locale }) {
       locale={locale}
       title={dictionary.workspace.treatmentsTitle}
       subtitle={dictionary.workspace.treatmentsSubtitle}
+      notice={
+        user.is_verified ? null : <p className="form-note">{dictionary.workspace.emailVerificationPending}</p>
+      }
       actions={
         <Link href={`/${locale}/passport`} className="secondary-button">
           {dictionary.workspace.passportShortcut}
