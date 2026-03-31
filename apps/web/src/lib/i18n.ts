@@ -54,6 +54,30 @@ type Dictionary = {
     travelCta: string;
     travelText: string;
   };
+  workspace: {
+    summary: string;
+    summaryTitle: string;
+    summarySubtitle: string;
+    treatmentsTitle: string;
+    treatmentsSubtitle: string;
+    equivalentsTitle: string;
+    equivalentsSubtitle: string;
+    addTreatmentShortcut: string;
+    compareEquivalentShortcut: string;
+    passportShortcut: string;
+    summaryAddTreatmentBody: string;
+    summaryCompareBody: string;
+    summaryPassportBody: string;
+    passportCardTitle: string;
+    activeTreatmentsTitle: string;
+    addMedicationHelp: string;
+    corridorLabel: string;
+    equivalentsEmptyTitle: string;
+    equivalentsEmptyBody: string;
+    equivalentsResultsTitle: string;
+    sourceTreatmentsTitle: string;
+    alertsTitle: string;
+  };
 };
 
 export const dictionaries: Record<Locale, Dictionary> = {
@@ -110,6 +134,30 @@ export const dictionaries: Record<Locale, Dictionary> = {
       travelText:
         "Ton resume medical est pret a etre partage en francais, anglais et arabe.",
     },
+    workspace: {
+      summary: "Resume",
+      summaryTitle: "Resume patient",
+      summarySubtitle: "Ajoute, compare et partage sans te perdre dans un grand dashboard.",
+      treatmentsTitle: "Traitements",
+      treatmentsSubtitle: "Ajoute un traitement reel, verifie-le et retrouve-le facilement.",
+      equivalentsTitle: "Equivalents internationaux",
+      equivalentsSubtitle: "Compare tes traitements sur le corridor Maroc-France a partir des donnees reelles du catalogue.",
+      addTreatmentShortcut: "Ajouter un traitement",
+      compareEquivalentShortcut: "Comparer un equivalent",
+      passportShortcut: "Ouvrir le passeport",
+      summaryAddTreatmentBody: "Ajoute un traitement clair et relie au catalogue pour activer alertes, equivalents et passeport.",
+      summaryCompareBody: "Vois immediatement si un equivalent existe dans l'autre pays et pourquoi il est propose.",
+      summaryPassportBody: "Genere un passeport lisible, partageable et utile en situation reelle.",
+      passportCardTitle: "Passeport patient",
+      activeTreatmentsTitle: "Traitements actifs",
+      addMedicationHelp: "Recherche d'abord un medicament du catalogue, puis selectionne la bonne presentation avant de l'ajouter au passeport.",
+      corridorLabel: "Corridor actif",
+      equivalentsEmptyTitle: "Aucun traitement compare pour le moment",
+      equivalentsEmptyBody: "Ajoute d'abord un traitement lie au catalogue pour calculer les equivalences entre le Maroc et la France.",
+      equivalentsResultsTitle: "Equivalents trouves",
+      sourceTreatmentsTitle: "Traitements sources",
+      alertsTitle: "Alertes majeures",
+    },
   },
   en: {
     marketing: {
@@ -164,6 +212,30 @@ export const dictionaries: Record<Locale, Dictionary> = {
       travelText:
         "Your medical summary is ready to share in French, English and Arabic.",
     },
+    workspace: {
+      summary: "Summary",
+      summaryTitle: "Patient summary",
+      summarySubtitle: "Add, compare and share without getting lost in a large dashboard.",
+      treatmentsTitle: "Treatments",
+      treatmentsSubtitle: "Add a real treatment, verify it and find it quickly.",
+      equivalentsTitle: "International equivalents",
+      equivalentsSubtitle: "Compare your treatments on the Morocco-France corridor using real catalog data.",
+      addTreatmentShortcut: "Add a treatment",
+      compareEquivalentShortcut: "Compare an equivalent",
+      passportShortcut: "Open passport",
+      summaryAddTreatmentBody: "Add a catalog-linked treatment to activate alerts, equivalents and the passport.",
+      summaryCompareBody: "See immediately whether an equivalent exists in the other country and why it is suggested.",
+      summaryPassportBody: "Generate a readable, shareable passport that is useful in real situations.",
+      passportCardTitle: "Patient passport",
+      activeTreatmentsTitle: "Active treatments",
+      addMedicationHelp: "Search the catalog first, then select the right presentation before adding it to the passport.",
+      corridorLabel: "Active corridor",
+      equivalentsEmptyTitle: "No treatment ready for comparison yet",
+      equivalentsEmptyBody: "Add a catalog-linked treatment first to calculate equivalents between Morocco and France.",
+      equivalentsResultsTitle: "Found equivalents",
+      sourceTreatmentsTitle: "Source treatments",
+      alertsTitle: "Major alerts",
+    },
   },
   ar: {
     marketing: {
@@ -216,6 +288,30 @@ export const dictionaries: Record<Locale, Dictionary> = {
       recentActivity: "النشاط الاخير",
       travelCta: "فتح الجواز",
       travelText: "الملخص الطبي جاهز للمشاركة بالفرنسية والانجليزية والعربية.",
+    },
+    workspace: {
+      summary: "الملخص",
+      summaryTitle: "ملخص المريض",
+      summarySubtitle: "اضف وقارن وشارك دون الضياع داخل لوحة كبيرة ومعقدة.",
+      treatmentsTitle: "العلاجات",
+      treatmentsSubtitle: "اضف علاجا حقيقيا وتحقق منه واعثر عليه بسرعة.",
+      equivalentsTitle: "البدائل الدولية",
+      equivalentsSubtitle: "قارن علاجاتك على ممر المغرب-فرنسا بالاعتماد على بيانات الدليل الفعلية.",
+      addTreatmentShortcut: "اضافة علاج",
+      compareEquivalentShortcut: "مقارنة بديل",
+      passportShortcut: "فتح الجواز",
+      summaryAddTreatmentBody: "اضف علاجا مرتبطا بالدليل لتفعيل التنبيهات والبدائل والجواز الطبي.",
+      summaryCompareBody: "اعرف فورا هل يوجد بديل في البلد الآخر ولماذا تم اقتراحه.",
+      summaryPassportBody: "انشئ جوازا واضحا وقابلا للمشاركة ومفيدا في الاستخدام الحقيقي.",
+      passportCardTitle: "جواز المريض",
+      activeTreatmentsTitle: "العلاجات النشطة",
+      addMedicationHelp: "ابحث أولا في دليل الادوية ثم اختر التركيبة الصحيحة قبل اضافتها الى الجواز.",
+      corridorLabel: "الممر النشط",
+      equivalentsEmptyTitle: "لا يوجد علاج جاهز للمقارنة بعد",
+      equivalentsEmptyBody: "اضف اولا علاجا مرتبطا بالدليل لحساب البدائل بين المغرب وفرنسا.",
+      equivalentsResultsTitle: "البدائل المتاحة",
+      sourceTreatmentsTitle: "العلاجات المصدر",
+      alertsTitle: "التنبيهات المهمة",
     },
   },
 };
