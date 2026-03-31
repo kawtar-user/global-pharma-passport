@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app.api.auth import get_current_user, require_admin
+from app.api.auth import get_current_verified_user, require_admin
 from app.api.dependencies import get_db_session
 from app.models.user import User
 from app.schemas.interactions import (
@@ -36,6 +36,6 @@ def list_interactions(
 def check_interactions(
     payload: InteractionCheckRequest,
     db: Session = Depends(get_db_session),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_current_verified_user),
 ) -> InteractionCheckResponse:
     return interaction_service.check_interactions(db, payload.presentation_ids)

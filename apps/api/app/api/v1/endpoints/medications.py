@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
-from app.api.auth import get_current_user, require_admin
+from app.api.auth import get_current_verified_user, require_admin
 from app.api.dependencies import get_db_session
 from app.models.user import User
 from app.schemas.medications import (
@@ -70,7 +70,7 @@ def list_drug_products(
     query: str | None = Query(default=None, min_length=2),
     country_code: str | None = Query(default=None, min_length=2, max_length=2),
     db: Session = Depends(get_db_session),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_current_verified_user),
 ) -> list[DrugProductRead]:
     return [
         _serialize_product(item)
@@ -81,7 +81,7 @@ def list_drug_products(
 @router.get("/me", response_model=list[PatientMedicationRead])
 def list_my_medications(
     db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
 ) -> list[PatientMedicationRead]:
     return [
         _serialize_patient_medication(item)
@@ -93,7 +93,7 @@ def list_my_medications(
 def create_my_medication(
     payload: PatientMedicationCreate,
     db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
 ) -> PatientMedicationRead:
     return _serialize_patient_medication(
         medication_service.create_patient_medication(db, current_user, payload)
@@ -105,7 +105,7 @@ def update_my_medication(
     medication_id: str,
     payload: PatientMedicationUpdate,
     db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
 ) -> PatientMedicationRead:
     return _serialize_patient_medication(
         medication_service.update_patient_medication(db, current_user, medication_id, payload)
@@ -116,7 +116,7 @@ def update_my_medication(
 def delete_my_medication(
     medication_id: str,
     db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
 ) -> Response:
     medication_service.delete_patient_medication(db, current_user, medication_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

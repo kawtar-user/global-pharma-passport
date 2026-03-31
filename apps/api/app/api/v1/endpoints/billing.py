@@ -6,7 +6,7 @@ import stripe
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
-from app.api.auth import get_current_user
+from app.api.auth import get_current_verified_user
 from app.api.dependencies import get_db_session
 from app.core.config import settings
 from app.models.user import User
@@ -25,7 +25,7 @@ router = APIRouter()
 @router.get("/me/subscription", response_model=SubscriptionRead)
 def get_my_subscription(
     db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
 ) -> SubscriptionRead:
     return billing_service.get_current_subscription(db, current_user)
 
@@ -33,7 +33,7 @@ def get_my_subscription(
 @router.get("/me/entitlements", response_model=EntitlementRead)
 def get_my_entitlements(
     db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
 ) -> EntitlementRead:
     subscription = billing_service.get_current_subscription(db, current_user)
     return EntitlementRead(**billing_service.build_entitlements(subscription))
@@ -42,7 +42,7 @@ def get_my_entitlements(
 @router.post("/checkout-session", response_model=CheckoutSessionResponse)
 def create_checkout_session(
     payload: CheckoutSessionRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
 ) -> CheckoutSessionResponse:
     return CheckoutSessionResponse(
         checkout_url=billing_service.create_checkout_session(
@@ -54,7 +54,7 @@ def create_checkout_session(
 
 
 @router.post("/portal-session", response_model=BillingPortalResponse)
-def create_portal_session(current_user: User = Depends(get_current_user)) -> BillingPortalResponse:
+def create_portal_session(current_user: User = Depends(get_current_verified_user)) -> BillingPortalResponse:
     return BillingPortalResponse(portal_url=billing_service.create_billing_portal_session(current_user))
 
 

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, hash_password, verify_password
 from app.services import billing as billing_service
+from app.services import email_verification as email_verification_service
 from app.models.user import User, UserRole
 from app.schemas.auth import LoginRequest, RegisterRequest
 
@@ -27,6 +28,7 @@ def register_user(db: Session, payload: RegisterRequest) -> tuple[User, str]:
     )
     db.add(user)
     billing_service.create_default_free_subscription(db, user)
+    verification = email_verification_service.issue_verification(db, user)
     db.commit()
     db.refresh(user)
     token = create_access_token(user.id)

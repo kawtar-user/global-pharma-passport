@@ -36,6 +36,22 @@ class LoginRequest(ApiSchema):
 class AccessTokenResponse(ApiSchema):
     access_token: str
     token_type: str = "bearer"
+    requires_verification: bool = False
+
+
+class EmailVerificationRequest(ApiSchema):
+    email: EmailStr
+
+
+class EmailVerificationConfirmRequest(ApiSchema):
+    token: str | None = None
+    email: EmailStr | None = None
+    code: str | None = Field(default=None, min_length=4, max_length=12)
+
+
+class EmailVerificationResponse(ApiSchema):
+    message: str
+    verification_required: bool = True
 
 
 class AuthenticatedUserRead(OrmSchema):

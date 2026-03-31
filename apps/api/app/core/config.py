@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str | None = None
     stripe_premium_monthly_price_id: str | None = None
     app_base_url: str = "http://localhost:3000"
+    email_verification_expire_hours: int = 24
     default_language: str = "fr"
     default_country: str = "MA"
     allowed_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]

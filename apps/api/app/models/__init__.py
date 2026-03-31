@@ -9,12 +9,14 @@ from app.models.catalog import (
     DrugPresentationIngredient,
     DrugProduct,
 )
+from app.models.email_verification import EmailVerificationToken
 from app.models.passport import MedicalPassport, MedicalPassportSnapshot, PassportStatus
 from app.models.user import User, UserMedication
 
 __all__ = [
     "ActiveIngredient",
     "DosageForm",
+    "EmailVerificationToken",
     "DrugEquivalent",
     "DrugInteraction",
     "DrugPresentation",

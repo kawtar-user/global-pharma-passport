@@ -13,6 +13,7 @@ from app.models.mixins import TimestampMixin, UuidPrimaryKeyMixin
 if TYPE_CHECKING:
     from app.models.billing import Subscription
     from app.models.catalog import DrugPresentation
+    from app.models.email_verification import EmailVerificationToken
 
 
 class UserRole(str, Enum):
@@ -50,6 +51,10 @@ class User(UuidPrimaryKeyMixin, TimestampMixin, Base):
 
     medications: Mapped[list["UserMedication"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     subscriptions: Mapped[list["Subscription"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    email_verification_tokens: Mapped[list["EmailVerificationToken"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 
 
 class UserMedication(UuidPrimaryKeyMixin, TimestampMixin, Base):

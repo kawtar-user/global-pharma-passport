@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app.api.auth import get_current_user, require_admin
+from app.api.auth import get_current_verified_user, require_admin
 from app.api.dependencies import get_db_session
 from app.models.user import User
 from app.schemas.users import (
@@ -48,7 +48,7 @@ def update_user(
 
 
 @router.get("/me/profile", response_model=UserRead)
-def get_my_profile(current_user: User = Depends(get_current_user)) -> UserRead:
+def get_my_profile(current_user: User = Depends(get_current_verified_user)) -> UserRead:
     return current_user
 
 
@@ -56,6 +56,6 @@ def get_my_profile(current_user: User = Depends(get_current_user)) -> UserRead:
 def update_my_profile(
     payload: UserUpdate,
     db: Session = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
 ) -> UserRead:
     return user_service.update_user(db, current_user, payload)
