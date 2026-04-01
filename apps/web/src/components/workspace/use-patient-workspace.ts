@@ -200,6 +200,8 @@ export function usePatientWorkspace(locale: Locale) {
     medicationLimit: entitlements?.limits.medications_max ?? 3,
     setError,
     addMedication: (medication: PatientMedication) => setMedications((current) => [medication, ...current]),
+    removeMedication: (medicationId: string) =>
+      setMedications((current) => current.filter((item) => item.id !== medicationId)),
     upgradeToPremium: () => void handleUpgrade(),
   };
 }

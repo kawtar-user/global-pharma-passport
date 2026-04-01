@@ -303,6 +303,13 @@ export function createMyMedication(
   });
 }
 
+export function deleteMyMedication(medicationId: string, token?: string | null) {
+  return request<void>(`/medications/me/${medicationId}`, {
+    method: "DELETE",
+    token,
+  });
+}
+
 export function listDrugProducts(query: string, countryCode?: string | null, token?: string | null) {
   const searchParams = new URLSearchParams({ query });
   if (countryCode) {
