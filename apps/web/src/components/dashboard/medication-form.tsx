@@ -23,7 +23,6 @@ type MedicationDraft = {
   selectedPresentationId: string;
   enteredName: string;
   doseText: string;
-  frequencyText: string;
   indication: string;
 };
 
@@ -33,7 +32,6 @@ const initialState = (country: string): MedicationDraft => ({
   selectedPresentationId: "",
   enteredName: "",
   doseText: "",
-  frequencyText: "",
   indication: "",
 });
 
@@ -57,24 +55,26 @@ const medicationCopy: Record<
   {
     labels: {
       search: string;
-      schedule: string;
+      dosage: string;
       purpose: string;
       country: string;
       submit: string;
     };
     placeholders: {
       search: string;
-      schedule: string;
+      dosage: string;
       purpose: string;
     };
     hints: {
       search: string;
       country: string;
+      dosage: string;
     };
+    disclaimer: string;
     errors: {
       query: string;
       selection: string;
-      schedule: string;
+      dosage: string;
       purpose: string;
       session: string;
     };
