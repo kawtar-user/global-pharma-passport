@@ -50,6 +50,45 @@ function unique(values: Array<string | null | undefined>) {
   return Array.from(new Set(values.filter((value): value is string => Boolean(value))));
 }
 
+function buildDosageSuggestion(result: SelectedMedication | null, locale: Locale) {
+  if (!result) {
+    return "";
+  }
+
+  const ingredientNames = result.activeIngredients.map((item) => item.toLowerCase());
+  const hasIngredient = (needle: string) => ingredientNames.some((item) => item.includes(needle));
+
+  if (hasIngredient("paracetamol") || hasIngredient("paracétamol") || hasIngredient("acetaminophen")) {
+    return locale === "en"
+      ? "Usual information: often taken 1 dose every 6 to 8 hours when needed."
+      : locale === "ar"
+        ? "معلومة شائعة: غالبا تؤخذ جرعة واحدة كل 6 إلى 8 ساعات عند الحاجة."
+        : "Posologie usuelle indicative : souvent 1 prise toutes les 6 à 8 heures si besoin.";
+  }
+
+  if (hasIngredient("metformin") || hasIngredient("metformine")) {
+    return locale === "en"
+      ? "Usual information: often taken with meals, once or twice daily depending on the prescription."
+      : locale === "ar"
+        ? "معلومة شائعة: غالبا تؤخذ مع الطعام مرة أو مرتين يوميا حسب الوصفة."
+        : "Posologie usuelle indicative : souvent prise au cours des repas, 1 à 2 fois par jour selon l'ordonnance.";
+  }
+
+  if (hasIngredient("amoxicillin") || hasIngredient("amoxicilline")) {
+    return locale === "en"
+      ? "Usual information: often taken 2 to 3 times daily for a limited duration."
+      : locale === "ar"
+        ? "معلومة شائعة: غالبا تؤخذ مرتين إلى ثلاث مرات يوميا لمدة محدودة."
+        : "Posologie usuelle indicative : souvent 2 à 3 prises par jour pendant une durée limitée.";
+  }
+
+  return locale === "en"
+    ? `Usual information: check the package instructions for ${result.strengthText.toLowerCase()} ${result.dosageForm.toLowerCase()}.`
+    : locale === "ar"
+      ? `معلومة شائعة: راجع تعليمات العلبة لهذا التركيز ${result.strengthText} وهذا الشكل الدوائي.`
+      : `Posologie usuelle indicative : verifier la notice pour ${result.strengthText.toLowerCase()} en ${result.dosageForm.toLowerCase()}.`;
+}
+
 const medicationCopy: Record<
   Locale,
   {
@@ -90,24 +129,26 @@ const medicationCopy: Record<
   fr: {
     labels: {
       search: "Rechercher un médicament",
-      schedule: "Posologie",
+      dosage: "Posologie",
       purpose: "Indication",
       country: "Pays",
       submit: "Ajouter au passeport",
     },
     placeholders: {
       search: "Ex. Doliprane, Glucophage, Coveram...",
-      schedule: "1 comprimé matin et soir",
+      dosage: "ex: 1 comprimé matin et soir pendant 5 jours",
       purpose: "Diabète, tension, douleur...",
     },
     hints: {
       search: "Commence à taper le nom commercial ou le principe actif. Les suggestions arrivent automatiquement.",
       country: "Choisis le pays où ce médicament est actuellement utilisé.",
+      dosage: "Saisis la posologie telle qu'elle t'a été expliquée ou telle qu'elle figure sur ton ordonnance.",
     },
+    disclaimer: "Ne remplace pas un avis médical.",
     errors: {
       query: "Ajoute un nom de médicament pour lancer la recherche.",
       selection: "Sélectionne un médicament dans les résultats du catalogue.",
-      schedule: "Ajoute une posologie simple et compréhensible.",
+      dosage: "Ajoute une posologie simple et compréhensible.",
       purpose: "Ajoute à quoi sert ce traitement.",
       session: "Ta session a expiré. Reconnecte-toi pour ajouter un traitement.",
     },
@@ -122,24 +163,26 @@ const medicationCopy: Record<
   en: {
     labels: {
       search: "Search medication",
-      schedule: "Dosage",
+      dosage: "Dosage instructions",
       purpose: "Reason",
       country: "Country",
       submit: "Add to passport",
     },
     placeholders: {
       search: "e.g. Doliprane, Glucophage, Coveram...",
-      schedule: "1 tablet morning and evening",
+      dosage: "e.g. 1 tablet morning and evening for 5 days",
       purpose: "Diabetes, blood pressure, pain...",
     },
     hints: {
       search: "Start typing a brand or active ingredient. Suggestions load automatically.",
       country: "Choose the country where this medication is currently used.",
+      dosage: "Enter the dosage as it was explained to you or written on your prescription.",
     },
+    disclaimer: "Does not replace medical advice.",
     errors: {
       query: "Add a medication name to start the search.",
       selection: "Select one medication from the catalog results.",
-      schedule: "Add a simple, easy-to-understand dosage.",
+      dosage: "Add a simple, easy-to-understand dosage.",
       purpose: "Add what this treatment is for.",
       session: "Your session expired. Sign in again to add a treatment.",
     },
@@ -154,24 +197,26 @@ const medicationCopy: Record<
   ar: {
     labels: {
       search: "البحث عن دواء",
-      schedule: "الجرعة",
+      dosage: "الجرعة",
       purpose: "سبب الاستخدام",
       country: "الدولة",
       submit: "إضافة إلى الجواز الطبي",
     },
     placeholders: {
       search: "مثال: Doliprane أو Glucophage أو Coveram",
-      schedule: "قرص صباحا ومساء",
+      dosage: "مثال: قرص صباحا ومساء لمدة 5 أيام",
       purpose: "سكري، ضغط، ألم...",
     },
     hints: {
       search: "ابدأ بكتابة الاسم التجاري أو المادة الفعالة وستظهر الاقتراحات تلقائيا.",
       country: "اختر الدولة التي تستعمل فيها هذا الدواء حاليا.",
+      dosage: "أدخل الجرعة كما شُرحت لك أو كما هي مكتوبة في الوصفة.",
     },
+    disclaimer: "لا يغني عن رأي طبي.",
     errors: {
       query: "أضف اسم الدواء لبدء البحث.",
       selection: "اختر دواء واحدا من نتائج الدليل.",
-      schedule: "أضف جرعة واضحة وسهلة الفهم.",
+      dosage: "أضف جرعة واضحة وسهلة الفهم.",
       purpose: "أضف سبب استخدام هذا العلاج.",
       session: "انتهت الجلسة. سجل الدخول من جديد لإضافة علاج.",
     },
@@ -219,6 +264,7 @@ export function MedicationForm({
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const copy = medicationCopy[locale];
+  const dosageSuggestion = buildDosageSuggestion(selectedMedication, locale);
   const remainingMedicationSlots =
     medicationLimit === null ? null : Math.max(medicationLimit - currentMedicationCount, 0);
 
@@ -232,7 +278,6 @@ export function MedicationForm({
       if (field === "query" || field === "country") {
         next.selectedPresentationId = "";
         next.enteredName = "";
-        next.doseText = "";
       }
       return next;
     });
@@ -343,7 +388,6 @@ export function MedicationForm({
       query: `${result.brandName} ${result.strengthText}`,
       selectedPresentationId: result.presentationId,
       enteredName: `${result.brandName} ${result.strengthText}`,
-      doseText: result.strengthText,
     }));
     setSearchResults([]);
     setSearchNotice(`Sélectionné : ${result.brandName} ${result.strengthText} · ${result.countryCode}`);
@@ -360,8 +404,8 @@ export function MedicationForm({
       return;
     }
 
-    if (form.frequencyText.trim().length < 2) {
-      setError(copy.errors.schedule);
+    if (form.doseText.trim().length < 2) {
+      setError(copy.errors.dosage);
       return;
     }
 
@@ -381,8 +425,8 @@ export function MedicationForm({
         {
           drug_presentation_id: selectedMedication?.presentationId || form.selectedPresentationId,
           entered_name: selectedMedication ? `${selectedMedication.brandName} ${selectedMedication.strengthText}` : form.enteredName,
-          dose_text: selectedMedication?.strengthText || form.doseText,
-          frequency_text: form.frequencyText,
+          dose_text: form.doseText,
+          frequency_text: null,
           indication: form.indication,
         },
         token,
@@ -391,7 +435,7 @@ export function MedicationForm({
         eventName: "medication_added",
         locale,
         countryCode: form.country,
-        properties: { has_schedule: Boolean(form.frequencyText), has_purpose: Boolean(form.indication) },
+        properties: { has_schedule: Boolean(form.doseText), has_purpose: Boolean(form.indication) },
       });
       onMedicationCreated(medication);
       setForm(initialState(defaultCountry));
@@ -451,14 +495,19 @@ export function MedicationForm({
         </label>
 
         <label className="field">
-          <span>{copy.labels.schedule}</span>
+          <span>{copy.labels.dosage}</span>
           <input
             type="text"
-            value={form.frequencyText}
-            onChange={(event) => updateField("frequencyText", event.target.value)}
-            placeholder={copy.placeholders.schedule}
+            value={form.doseText}
+            onChange={(event) => updateField("doseText", event.target.value)}
+            placeholder={copy.placeholders.dosage}
             required
           />
+          <small className="field__hint">{copy.hints.dosage}</small>
+          <small className="field__hint">
+            {dosageSuggestion ? `${dosageSuggestion} ` : ""}
+            {copy.disclaimer}
+          </small>
         </label>
 
         <label className="field">
@@ -517,7 +566,7 @@ export function MedicationForm({
         disabled={
           isSubmitting ||
           !selectedMedication ||
-          form.frequencyText.trim().length < 2 ||
+          form.doseText.trim().length < 2 ||
           form.indication.trim().length < 2
         }
       >
